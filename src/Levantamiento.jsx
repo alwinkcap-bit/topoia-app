@@ -87,6 +87,7 @@ function calcularArea(puntos) {
 
 function Levantamiento({ volver, continuar }) {
     const [metodoEntrada, setMetodoEntrada] = useState('coordenadas')
+    const [tipoLevantamiento, setTipoLevantamiento] = useState('cerrado')
     const [puntoInicial, setPuntoInicial] = useState({
   norte: '',
   este: '',
@@ -288,7 +289,22 @@ const puntosActivos =
 const segmentos = useMemo(() => {
   if (puntosActivos.length < 2) return []
 
-  // Con solo 2 puntos existe una línea, no un polígono cerrado.
+  // Recorrido abierto:
+  // calcula cada tramo consecutivo, pero NO vuelve al punto inicial.
+  if (tipoLevantamiento === 'abierto') {
+    return puntosActivos.slice(0, -1).map((punto, index) => {
+      const siguiente = puntosActivos[index + 1]
+
+      return {
+        desde: punto.nombre,
+        hasta: siguiente.nombre,
+        distancia: calcularDistancia(punto, siguiente),
+        rumbo: calcularRumbo(punto, siguiente),
+      }
+    })
+  }
+
+  // Con solo 2 puntos no existe todavía un polígono.
   if (puntosActivos.length === 2) {
     const punto = puntosActivos[0]
     const siguiente = puntosActivos[1]
@@ -303,8 +319,8 @@ const segmentos = useMemo(() => {
     ]
   }
 
-  // Con 3 o más puntos cerramos el polígono:
-  // último vértice → primer vértice.
+  // Polígono cerrado:
+  // conecta también el último vértice con el primero.
   return puntosActivos.map((punto, index) => {
     const siguiente =
       puntosActivos[(index + 1) % puntosActivos.length]
@@ -316,19 +332,20 @@ const segmentos = useMemo(() => {
       rumbo: calcularRumbo(punto, siguiente),
     }
   })
-}, [puntosActivos])
+}, [puntosActivos, tipoLevantamiento])
+const perimetro = useMemo(() => {
+  return segmentos.reduce(
+    (total, segmento) => total + (segmento.distancia || 0),
+    0
+  )
+}, [segmentos])
 
-  const perimetro = useMemo(() => {
-    return segmentos.reduce(
-      (total, segmento) => total + (segmento.distancia || 0),
-      0
-    )
-  }, [segmentos])
+const area = useMemo(() => {
+  if (tipoLevantamiento === 'abierto') return 0
+  if (puntosActivos.length < 3) return 0
 
- const area = useMemo(
-  () => calcularArea(puntosActivos),
-  [puntosActivos]
-)
+  return calcularArea(puntosActivos)
+}, [puntosActivos, tipoLevantamiento])
 
   return (
     <div className="nuevo-plano">
@@ -393,6 +410,40 @@ const segmentos = useMemo(() => {
     >
       <strong>Rumbos y Distancias</strong>
       <span>Ingresar dirección, ángulo y distancia</span>
+    </button>
+  </div>
+</div>
+<div className="selector-metodo">
+  <div className="selector-metodo-titulo">
+    <span>TIPO DE LEVANTAMIENTO</span>
+    <p>Selecciona si el recorrido es cerrado o abierto.</p>
+  </div>
+
+  <div className="metodo-botones">
+    <button
+      type="button"
+      className={
+        tipoLevantamiento === 'cerrado'
+          ? 'metodo-btn activo'
+          : 'metodo-btn'
+      }
+      onClick={() => setTipoLevantamiento('cerrado')}
+    >
+      <strong>Polígono cerrado</strong>
+      <span>El último punto se conecta con el punto inicial</span>
+    </button>
+
+    <button
+      type="button"
+      className={
+        tipoLevantamiento === 'abierto'
+          ? 'metodo-btn activo'
+          : 'metodo-btn'
+      }
+      onClick={() => setTipoLevantamiento('abierto')}
+    >
+      <strong>Recorrido abierto</strong>
+      <span>El último punto no se conecta con el inicial</span>
     </button>
   </div>
 </div>
@@ -741,13 +792,19 @@ const segmentos = useMemo(() => {
             </div>
 
             <div>
-              <span>PERÍMETRO</span>
+              <span>
+  {tipoLevantamiento === 'cerrado' ? 'PERÍMETRO' : 'LONGITUD TOTAL'}
+</span>
               <strong>{perimetro.toFixed(2)} m</strong>
             </div>
 
             <div>
               <span>ÁREA</span>
-              <strong>{area.toFixed(2)} m²</strong>
+              <strong>
+  {tipoLevantamiento === 'cerrado'
+    ? `${area.toFixed(2)} m²`
+    : 'NO APLICA'}
+</strong>
             </div>
           </div>
         </section>
@@ -759,9 +816,10 @@ const segmentos = useMemo(() => {
             <div>
               <h3>Distancias y rumbos</h3>
               <p>
-                TopoIA calcula cada tramo incluyendo el cierre del
-                último vértice al primero.
-              </p>
+  {tipoLevantamiento === 'cerrado'
+    ? 'TopoIA calcula cada tramo incluyendo el cierre del último vértice al primero.'
+    : 'TopoIA calcula los tramos consecutivos sin cerrar el recorrido al punto inicial.'}
+</p>
             </div>
           </div>
 
