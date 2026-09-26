@@ -1,7 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function NuevoPlano({ volver, continuar }) {
-  const [datos, setDatos] = useState({
+  const datosGuardados = (() => {
+    try {
+      const datos = localStorage.getItem('topoia-nuevo-plano')
+      return datos ? JSON.parse(datos) : null
+    } catch {
+      return null
+    }
+  })()
+
+  const [datos, setDatos] = useState(datosGuardados || {
     nombreProyecto: '',
     provincia: '',
     distrito: '',
@@ -18,6 +27,17 @@ function NuevoPlano({ volver, continuar }) {
     idoneidad: '',
     fechaLevantamiento: '',
   })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'topoia-nuevo-plano',
+        JSON.stringify(datos)
+      )
+    } catch {
+      // Si localStorage no está disponible, la app continúa normalmente.
+    }
+  }, [datos])
 
   const actualizar = (e) => {
     const { name, value } = e.target

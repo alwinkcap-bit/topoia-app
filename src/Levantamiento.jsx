@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 function calcularDistancia(p1, p2) {
   const n1 = Number(p1.norte)
@@ -86,20 +86,37 @@ function calcularArea(puntos) {
 }
 
 function Levantamiento({ volver, continuar }) {
-    const [metodoEntrada, setMetodoEntrada] = useState('coordenadas')
-    const [tipoLevantamiento, setTipoLevantamiento] = useState('cerrado')
-    const [puntoInicial, setPuntoInicial] = useState({
-  norte: '',
-  este: '',
-})
-const [cierreObservado, setCierreObservado] = useState({
-  ns: 'N',
-  grados: '',
-  minutos: '',
-  segundos: '',
-  eo: 'E',
-  distancia: '',
-})
+  const datosGuardados = (() => {
+  try {
+    const datos = localStorage.getItem('topoia-levantamiento')
+    return datos ? JSON.parse(datos) : null
+  } catch {
+    return null
+  }
+})()
+
+   const [metodoEntrada, setMetodoEntrada] = useState(
+  datosGuardados?.metodoEntrada || 'coordenadas'
+)
+    const [tipoLevantamiento, setTipoLevantamiento] = useState(
+  datosGuardados?.tipoLevantamiento || 'cerrado'
+)
+const [puntoInicial, setPuntoInicial] = useState(
+  datosGuardados?.puntoInicial || {
+    norte: '',
+    este: '',
+  }
+)
+const [cierreObservado, setCierreObservado] = useState(
+  datosGuardados?.cierreObservado || {
+    ns: 'N',
+    grados: '',
+    minutos: '',
+    segundos: '',
+    eo: 'E',
+    distancia: '',
+  }
+)
 const actualizarCierreObservado = (campo, valor) => {
   setCierreObservado((anterior) => ({
     ...anterior,
@@ -107,7 +124,8 @@ const actualizarCierreObservado = (campo, valor) => {
   }))
 }
 
-const [rumbosDistancias, setRumbosDistancias] = useState([
+const [rumbosDistancias, setRumbosDistancias] = useState(
+  datosGuardados?.rumbosDistancias || [
   {
     id: 1,
     desde: 'M1',
@@ -131,7 +149,8 @@ const [rumbosDistancias, setRumbosDistancias] = useState([
     distancia: '',
   },
   
-])
+  ]
+)
 const actualizarRumbo = (id, campo, valor) => {
   setRumbosDistancias((anteriores) =>
     anteriores.map((tramo) =>
@@ -384,6 +403,27 @@ const [puntos, setPuntos] = useState([
     { id: 3, nombre: 'M3', norte: '', este: '', descripcion: '' },
   ])
 
+ useEffect(() => {
+  try {
+    localStorage.setItem(
+      'topoia-levantamiento',
+      JSON.stringify({
+        metodoEntrada,
+       tipoLevantamiento,
+        puntoInicial,
+        rumbosDistancias,
+        cierreObservado,
+      })
+    )
+  } catch {
+    // Si localStorage no está disponible, la app continúa normalmente.
+  }
+}, [
+  metodoEntrada,
+  puntoInicial,
+  rumbosDistancias,
+  cierreObservado,
+])
 const coordenadasCalculadas = calcularCoordenadasDesdeRumbos()
 const puntosActivos =
   metodoEntrada === 'rumbos'
