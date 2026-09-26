@@ -6,8 +6,22 @@ import GenerarPlano from './GenerarPlano'
 
 function App() {
     const [pantalla, setPantalla] = useState('inicio')
-    const [datosProyecto, setDatosProyecto] = useState(null)
-    const [datosLevantamiento, setDatosLevantamiento] = useState(null)
+    const [datosProyecto, setDatosProyecto] = useState(() => {
+  try {
+    const datos = localStorage.getItem('topoia-nuevo-plano')
+    return datos ? JSON.parse(datos) : null
+  } catch {
+    return null
+  }
+})
+    const [datosLevantamiento, setDatosLevantamiento] = useState(() => {
+  try {
+    const datos = localStorage.getItem('topoia-levantamiento')
+    return datos ? JSON.parse(datos) : null
+  } catch {
+    return null
+  }
+})
 
 if (pantalla === 'nuevo-plano') {
   return (

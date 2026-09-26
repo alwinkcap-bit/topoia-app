@@ -694,6 +694,9 @@ footer {
   stroke-width: 3;
   stroke-linejoin: round;
 }
+.poligono-forma.recorrido-abierto {
+  fill: none;
+}
 
 /* Puntos o mojones */
 .vertice {

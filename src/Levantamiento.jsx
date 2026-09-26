@@ -1284,11 +1284,17 @@ const area = useMemo(() => {
             onClick={() =>
               continuar &&
               continuar({
-                puntos,
-                segmentos,
-                perimetro,
-                area,
-              })
+  metodoEntrada,
+  tipoLevantamiento,
+  puntos: puntosActivos,
+  segmentos,
+  perimetro,
+  area,
+  longitudObservada,
+  errorCierre,
+  ajusteBowditch,
+  coordenadasAjustadas,
+})
             }
           >
             Generar plano →

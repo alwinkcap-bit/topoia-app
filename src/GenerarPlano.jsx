@@ -115,10 +115,18 @@ function GenerarPlano({ datosProyecto, levantamiento, volver }) {
                 role="img"
                 aria-label="Vista preliminar del polígono"
               >
-                <polygon
-                  points={polygonPoints}
-                  className="poligono-forma"
-                />
+                {levantamiento?.tipoLevantamiento === 'abierto' ? (
+ <polyline
+  points={polygonPoints}
+  className="poligono-forma recorrido-abierto"
+  fill="none"
+/>
+) : (
+  <polygon
+    points={polygonPoints}
+    className="poligono-forma"
+  />
+)}
 
                 {puntosGrafico.map((p) => (
                   <g key={p.id}>
