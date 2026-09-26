@@ -480,6 +480,34 @@ const errorCierre = calcularErrorCierre()
 const ajusteBowditch = calcularAjusteBowditch()
 const coordenadasAjustadas = calcularCoordenadasAjustadas()
 
+const longitudObservada = useMemo(() => {
+  if (metodoEntrada !== 'rumbos') return null
+
+  const tramos =
+    tipoLevantamiento === 'cerrado'
+      ? [...rumbosDistancias, cierreObservado]
+      : rumbosDistancias
+
+  let total = 0
+
+  for (const tramo of tramos) {
+    const distancia = Number(tramo.distancia)
+
+    if (!Number.isFinite(distancia) || distancia <= 0) {
+      return null
+    }
+
+    total += distancia
+  }
+
+  return total
+}, [
+  metodoEntrada,
+  tipoLevantamiento,
+  rumbosDistancias,
+  cierreObservado,
+])
+
 const perimetro = useMemo(() => {
   return segmentos.reduce(
     (total, segmento) => total + (segmento.distancia || 0),
@@ -1035,6 +1063,16 @@ const area = useMemo(() => {
 </span>
               <strong>{perimetro.toFixed(2)} m</strong>
             </div>
+{metodoEntrada === 'rumbos' && (
+  <div>
+    <span>LONGITUD OBSERVADA</span>
+    <strong>
+      {longitudObservada !== null
+        ? `${longitudObservada.toFixed(2)} m`
+        : 'PENDIENTE'}
+    </strong>
+  </div>
+)}
 
             <div>
               <span>ÁREA</span>
@@ -1142,14 +1180,13 @@ const area = useMemo(() => {
 <section className="form-seccion">
           <div className="form-seccion-titulo">
             <span>03</span>
-            <div>
-              <h3>Distancias y rumbos</h3>
-              <p>
-  {tipoLevantamiento === 'cerrado'
-    ? 'TopoIA calcula cada tramo incluyendo el cierre del último vértice al primero.'
-    : 'TopoIA calcula los tramos consecutivos sin cerrar el recorrido al punto inicial.'}
-</p>
-            </div>
+ <div>
+  <h3>Distancias y rumbos geométricos</h3>
+  <p>
+    Valores calculados automáticamente a partir de las coordenadas
+    de los vértices.
+  </p>
+</div>
           </div>
 
           <div className="tabla-scroll">
