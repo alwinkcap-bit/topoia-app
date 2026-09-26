@@ -1,4 +1,4 @@
-function VerificarPlano({ datosProyecto, levantamiento, volver }) {
+function VerificarPlano({ datosProyecto, levantamiento, volver, continuar }) {
     const cantidadVertices = levantamiento?.puntos?.length || 0
   const verticesValidos = cantidadVertices >= 3
   const coordenadasValidas =
@@ -212,6 +212,18 @@ const planoListo =
 </div>
   </div>
 </section>
+
+{planoListo && (
+  <div className="form-acciones">
+    <button
+      type="button"
+      className="btn-continuar"
+      onClick={continuar}
+    >
+      Generar documento final →
+    </button>
+  </div>
+)}
       </main>
     </div>
   )

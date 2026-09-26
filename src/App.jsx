@@ -4,6 +4,7 @@ import NuevoPlano from './NuevoPlano'
 import Levantamiento from './Levantamiento'
 import GenerarPlano from './GenerarPlano'
 import VerificarPlano from './VerificarPlano'
+import DocumentoFinal from './DocumentoFinal'
 
 function App() {
     const [pantalla, setPantalla] = useState('inicio')
@@ -65,7 +66,17 @@ if (pantalla === 'verificar-plano') {
   datosProyecto={datosProyecto}
   levantamiento={datosLevantamiento}
   volver={() => setPantalla('generar-plano')}
+  continuar={() => setPantalla('documento-final')}
 />
+  )
+}
+if (pantalla === 'documento-final') {
+  return (
+    <DocumentoFinal
+      datosProyecto={datosProyecto}
+      levantamiento={datosLevantamiento}
+      volver={() => setPantalla('verificar-plano')}
+    />
   )
 }
   return (
