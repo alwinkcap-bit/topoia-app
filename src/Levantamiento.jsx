@@ -92,6 +92,20 @@ function Levantamiento({ volver, continuar }) {
   norte: '',
   este: '',
 })
+const [cierreObservado, setCierreObservado] = useState({
+  ns: 'N',
+  grados: '',
+  minutos: '',
+  segundos: '',
+  eo: 'E',
+  distancia: '',
+})
+const actualizarCierreObservado = (campo, valor) => {
+  setCierreObservado((anterior) => ({
+    ...anterior,
+    [campo]: valor,
+  }))
+}
 
 const [rumbosDistancias, setRumbosDistancias] = useState([
   {
@@ -191,6 +205,50 @@ const rumboADeltas = (tramo) => {
   return {
     deltaN,
     deltaE,
+  }
+}
+const calcularErrorCierre = () => {
+  if (tipoLevantamiento !== 'cerrado') return null
+
+  const todosLosTramos = [
+    ...rumbosDistancias,
+    cierreObservado,
+  ]
+
+  let sumaDeltaN = 0
+  let sumaDeltaE = 0
+  let distanciaTotal = 0
+
+  for (const tramo of todosLosTramos) {
+    const deltas = rumboADeltas(tramo)
+    const distancia = Number(tramo.distancia)
+
+    if (!deltas || !Number.isFinite(distancia) || distancia <= 0) {
+      return null
+    }
+
+    sumaDeltaN += deltas.deltaN
+    sumaDeltaE += deltas.deltaE
+    distanciaTotal += distancia
+  }
+
+  const errorLineal = Math.sqrt(
+    sumaDeltaN ** 2 + sumaDeltaE ** 2
+  )
+
+  const toleranciaCierre = 0.001
+
+const precision =
+  errorLineal > toleranciaCierre
+    ? distanciaTotal / errorLineal
+    : Infinity
+
+  return {
+    errorNorte: sumaDeltaN,
+    errorEste: sumaDeltaE,
+    errorLineal,
+    distanciaTotal,
+    precision,
   }
 }
 const calcularCoordenadasDesdeRumbos = () => {
@@ -333,6 +391,10 @@ const segmentos = useMemo(() => {
     }
   })
 }, [puntosActivos, tipoLevantamiento])
+const errorCierre = calcularErrorCierre()
+console.log('ERROR CIERRE:', errorCierre)
+console.log('METODO ENTRADA:', metodoEntrada)
+console.log('TIPO LEVANTAMIENTO:', tipoLevantamiento)
 const perimetro = useMemo(() => {
   return segmentos.reduce(
     (total, segmento) => total + (segmento.distancia || 0),
@@ -599,6 +661,97 @@ const area = useMemo(() => {
 </td>
             </tr>
           ))}
+          {tipoLevantamiento === 'cerrado' && (
+  <tr>
+    <td>{`M${rumbosDistancias.length + 1}`}</td>
+    <td>M1</td>
+
+    <td>
+      <select
+        value={cierreObservado.ns}
+        onChange={(e) =>
+          actualizarCierreObservado('ns', e.target.value)
+        }
+        className="rumbo-select"
+      >
+        <option value="N">N</option>
+        <option value="S">S</option>
+      </select>
+    </td>
+
+    <td>
+      <input
+        type="number"
+        min="0"
+        max="90"
+        step="1"
+        value={cierreObservado.grados}
+        onChange={(e) =>
+          actualizarCierreObservado('grados', e.target.value)
+        }
+        className="rumbo-input"
+        placeholder="0"
+      />
+    </td>
+
+    <td>
+      <input
+        type="number"
+        min="0"
+        max="59"
+        step="1"
+        value={cierreObservado.minutos}
+        onChange={(e) =>
+          actualizarCierreObservado('minutos', e.target.value)
+        }
+        className="rumbo-input"
+        placeholder="0"
+      />
+    </td>
+
+    <td>
+      <input
+        type="number"
+        min="0"
+        max="59"
+        step="1"
+        value={cierreObservado.segundos}
+        onChange={(e) =>
+          actualizarCierreObservado('segundos', e.target.value)
+        }
+        className="rumbo-input"
+        placeholder="0"
+      />
+    </td>
+
+    <td>
+      <select
+        value={cierreObservado.eo}
+        onChange={(e) =>
+          actualizarCierreObservado('eo', e.target.value)
+        }
+        className="rumbo-select"
+      >
+        <option value="E">E</option>
+        <option value="W">O</option>
+      </select>
+    </td>
+
+    <td>
+      <input
+        type="number"
+        min="0"
+        step="0.001"
+        value={cierreObservado.distancia}
+        onChange={(e) =>
+          actualizarCierreObservado('distancia', e.target.value)
+        }
+        className="rumbo-input rumbo-distancia"
+        placeholder="0.000"
+      />
+    </td>
+  </tr>
+)}
         </tbody>
       </table>
     </div>
@@ -807,12 +960,50 @@ const area = useMemo(() => {
 </strong>
             </div>
           </div>
-        </section>
+        
+{tipoLevantamiento === 'cerrado' &&
+  metodoEntrada === 'rumbos' && (
+    errorCierre ? (
+      <div className="resumen-calculos">
+        <div>
+          <span>ERROR NORTE</span>
+          <strong>{errorCierre.errorNorte.toFixed(2)} m</strong>
+        </div>
 
-        <section className="form-seccion">
+        <div>
+          <span>ERROR ESTE</span>
+          <strong>{errorCierre.errorEste.toFixed(2)} m</strong>
+        </div>
+
+        <div>
+          <span>ERROR LINEAL</span>
+          <strong>{errorCierre.errorLineal.toFixed(2)} m</strong>
+        </div>
+
+        <div>
+          <span>PRECISIÓN</span>
+          <strong>
+            {Number.isFinite(errorCierre.precision)
+              ? `1:${Math.round(errorCierre.precision)}`
+              : 'CIERRE EXACTO'}
+          </strong>
+        </div>
+      </div>
+    ) : (
+      <div>
+  <p>
+    Complete todos los rumbos y distancias, incluido el tramo de cierre,
+    para calcular el error y la precisión.
+  </p>
+</div>
+    )
+  )}
+
+</section>
+
+<section className="form-seccion">
           <div className="form-seccion-titulo">
             <span>03</span>
-
             <div>
               <h3>Distancias y rumbos</h3>
               <p>
