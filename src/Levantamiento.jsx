@@ -1044,9 +1044,13 @@ const area = useMemo(() => {
             <span>02</span>
 
             <div>
-              <h3>Cálculos del polígono</h3>
+             <h3>
+  {tipoLevantamiento === 'cerrado'
+    ? 'Cálculos del polígono'
+    : 'Cálculos del recorrido'}
+</h3>
               <p>
-                Resultados obtenidos directamente de las coordenadas.
+               Resultados geométricos y control de cierre del levantamiento.
               </p>
             </div>
           </div>
