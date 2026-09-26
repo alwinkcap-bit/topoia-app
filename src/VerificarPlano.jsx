@@ -1,4 +1,26 @@
 function VerificarPlano({ datosProyecto, levantamiento, volver }) {
+    const cantidadVertices = levantamiento?.puntos?.length || 0
+  const verticesValidos = cantidadVertices >= 3
+  const coordenadasValidas =
+  cantidadVertices > 0 &&
+  levantamiento.puntos.every(
+    (punto) =>
+      punto.norte !== '' &&
+      punto.este !== '' &&
+      Number.isFinite(Number(punto.norte)) &&
+      Number.isFinite(Number(punto.este))
+  )
+    const requiereControlCierre =
+    levantamiento?.tipoLevantamiento === 'cerrado' &&
+    levantamiento?.metodoEntrada === 'rumbos'
+
+  const cierreDisponible =
+    !requiereControlCierre ||
+    levantamiento?.errorCierre != null
+const planoListo =
+  verticesValidos &&
+  coordenadasValidas &&
+  cierreDisponible
 
   return (
     <div className="nuevo-plano">
@@ -133,6 +155,61 @@ function VerificarPlano({ datosProyecto, levantamiento, volver }) {
       : '—'}
 </strong>
     </div>
+  </div>
+</section>
+<section className="form-seccion">
+  <div className="form-seccion-titulo">
+    <span>03</span>
+
+    <div>
+      <h3>Verificación automática</h3>
+      <p>
+        Comprobaciones técnicas antes de generar el documento final.
+      </p>
+    </div>
+  </div>
+
+  <div className="datos-preview">
+    <div>
+      <span>VÉRTICES DEL LEVANTAMIENTO</span>
+      <strong>
+        {verticesValidos
+          ? `✓ Correcto (${cantidadVertices})`
+          : `⚠ Se requieren mínimo 3 (${cantidadVertices})`}
+      </strong>
+    </div>
+       <div>
+      <span>COORDENADAS</span>
+      <strong>
+        {coordenadasValidas
+          ? '✓ Coordenadas válidas'
+          : '⚠ Revisar coordenadas'}
+      </strong>
+    </div> 
+    {requiereControlCierre && (
+  <div>
+    <span>CONTROL DE CIERRE</span>
+    <strong>
+      {cierreDisponible
+        ? `✓ Error: ${levantamiento.errorCierre.errorLineal.toFixed(3)} m · ${
+            Number.isFinite(levantamiento.errorCierre.precision)
+              ? `Precisión 1:${Math.round(levantamiento.errorCierre.precision)}`
+              : 'Cierre exacto'
+          }`
+        : '⚠ Revisar datos de cierre'}
+    </strong>
+  </div>
+)}
+<div className="datos-preview">
+  <div>
+    <span>ESTADO GENERAL</span>
+    <strong>
+      {planoListo
+        ? '✓ Plano listo para generar documento final'
+        : '⚠ El plano requiere correcciones'}
+    </strong>
+  </div>
+</div>
   </div>
 </section>
       </main>
