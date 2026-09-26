@@ -3,6 +3,7 @@ import './App.css'
 import NuevoPlano from './NuevoPlano'
 import Levantamiento from './Levantamiento'
 import GenerarPlano from './GenerarPlano'
+import VerificarPlano from './VerificarPlano'
 
 function App() {
     const [pantalla, setPantalla] = useState('inicio')
@@ -53,7 +54,18 @@ if (pantalla === 'generar-plano') {
       datosProyecto={datosProyecto}
       levantamiento={datosLevantamiento}
       volver={() => setPantalla('levantamiento')}
+      continuar={() => setPantalla('verificar-plano')}
     />
+  )
+}
+
+if (pantalla === 'verificar-plano') {
+  return (
+  <VerificarPlano
+  datosProyecto={datosProyecto}
+  levantamiento={datosLevantamiento}
+  volver={() => setPantalla('generar-plano')}
+/>
   )
 }
   return (

@@ -85,7 +85,7 @@ function NuevoPlano({ volver, continuar }) {
         <div className="progreso-activo"></div>
       </div>
 
-      <form className="form-plano" onSubmit={continuar}>
+      <form className="form-plano" onSubmit={enviarFormulario}>
 
         <section className="form-seccion">
           <div className="form-seccion-titulo">

@@ -1,4 +1,4 @@
-function GenerarPlano({ datosProyecto, levantamiento, volver }) {
+function GenerarPlano({ datosProyecto, levantamiento, volver, continuar }) {
   const puntos = levantamiento?.puntos || []
   const segmentos = levantamiento?.segmentos || []
   const area = levantamiento?.area || 0
@@ -413,6 +413,7 @@ const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
           <button
             type="button"
             className="btn-continuar"
+             onClick={continuar}
           >
             Verificar plano →
           </button>
