@@ -397,32 +397,37 @@ const calcularCoordenadasDesdeRumbos = () => {
   return coordenadas
 }
 
-const [puntos, setPuntos] = useState([
+const [puntos, setPuntos] = useState(
+  datosGuardados?.puntos || [
     { id: 1, nombre: 'M1', norte: '', este: '', descripcion: '' },
     { id: 2, nombre: 'M2', norte: '', este: '', descripcion: '' },
     { id: 3, nombre: 'M3', norte: '', este: '', descripcion: '' },
-  ])
+  ]
+)
 
  useEffect(() => {
   try {
     localStorage.setItem(
       'topoia-levantamiento',
-      JSON.stringify({
-        metodoEntrada,
-       tipoLevantamiento,
-        puntoInicial,
-        rumbosDistancias,
-        cierreObservado,
-      })
+   JSON.stringify({
+  metodoEntrada,
+  tipoLevantamiento,
+  puntoInicial,
+  rumbosDistancias,
+  cierreObservado,
+  puntos,
+})
     )
   } catch {
     // Si localStorage no está disponible, la app continúa normalmente.
   }
 }, [
   metodoEntrada,
+  tipoLevantamiento,
   puntoInicial,
   rumbosDistancias,
   cierreObservado,
+  puntos,
 ])
 const coordenadasCalculadas = calcularCoordenadasDesdeRumbos()
 const puntosActivos =
