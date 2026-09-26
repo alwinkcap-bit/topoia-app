@@ -251,6 +251,91 @@ const precision =
     precision,
   }
 }
+const calcularAjusteBowditch = () => {
+  if (tipoLevantamiento !== 'cerrado') return null
+  if (!errorCierre) return null
+
+  const tramos = [
+    ...rumbosDistancias,
+    cierreObservado,
+  ]
+
+  if (errorCierre.distanciaTotal <= 0) return null
+
+  return tramos.map((tramo) => {
+    const deltas = rumboADeltas(tramo)
+    const distancia = Number(tramo.distancia)
+
+    if (!deltas || !Number.isFinite(distancia) || distancia <= 0) {
+      return null
+    }
+
+    const proporcion =
+      distancia / errorCierre.distanciaTotal
+
+    const correccionN =
+      -errorCierre.errorNorte * proporcion
+
+    const correccionE =
+      -errorCierre.errorEste * proporcion
+
+    return {
+      desde: tramo.desde || `M${rumbosDistancias.length + 1}`,
+      hasta: tramo.hasta || 'M1',
+      distancia,
+      deltaN: deltas.deltaN,
+      deltaE: deltas.deltaE,
+      correccionN,
+      correccionE,
+      deltaNAjustado: deltas.deltaN + correccionN,
+      deltaEAjustado: deltas.deltaE + correccionE,
+    }
+  })
+}
+const calcularCoordenadasAjustadas = () => {
+  if (!ajusteBowditch) return []
+
+  const norteInicial = Number(puntoInicial.norte)
+  const esteInicial = Number(puntoInicial.este)
+
+  if (
+    puntoInicial.norte === '' ||
+    puntoInicial.este === '' ||
+    !Number.isFinite(norteInicial) ||
+    !Number.isFinite(esteInicial)
+  ) {
+    return []
+  }
+
+  const coordenadas = [
+    {
+      nombre: 'M1',
+      norte: norteInicial,
+      este: esteInicial,
+    },
+  ]
+
+  let norteActual = norteInicial
+  let esteActual = esteInicial
+
+  ajusteBowditch.forEach((tramo, index) => {
+    if (!tramo) return
+
+    norteActual += tramo.deltaNAjustado
+    esteActual += tramo.deltaEAjustado
+
+    coordenadas.push({
+      nombre:
+        index === ajusteBowditch.length - 1
+          ? 'M1 CIERRE'
+          : tramo.hasta,
+      norte: norteActual,
+      este: esteActual,
+    })
+  })
+
+  return coordenadas
+}
 const calcularCoordenadasDesdeRumbos = () => {
   const norteInicial = Number(puntoInicial.norte)
   const esteInicial = Number(puntoInicial.este)
@@ -392,9 +477,9 @@ const segmentos = useMemo(() => {
   })
 }, [puntosActivos, tipoLevantamiento])
 const errorCierre = calcularErrorCierre()
-console.log('ERROR CIERRE:', errorCierre)
-console.log('METODO ENTRADA:', metodoEntrada)
-console.log('TIPO LEVANTAMIENTO:', tipoLevantamiento)
+const ajusteBowditch = calcularAjusteBowditch()
+const coordenadasAjustadas = calcularCoordenadasAjustadas()
+
 const perimetro = useMemo(() => {
   return segmentos.reduce(
     (total, segmento) => total + (segmento.distancia || 0),
@@ -998,7 +1083,60 @@ const area = useMemo(() => {
 </div>
     )
   )}
+{ajusteBowditch && (
+  <div className="tabla-resultados">
+    <h4>Ajuste Bowditch</h4>
 
+    <div className="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Tramo</th>
+            <th>Corr. N</th>
+            <th>Corr. E</th>
+            <th>ΔN ajustado</th>
+            <th>ΔE ajustado</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {ajusteBowditch.map((tramo, index) => (
+            <tr key={index}>
+              <td>{tramo.desde} → {tramo.hasta}</td>
+              <td>{tramo.correccionN.toFixed(4)}</td>
+              <td>{tramo.correccionE.toFixed(4)}</td>
+              <td>{tramo.deltaNAjustado.toFixed(4)}</td>
+              <td>{tramo.deltaEAjustado.toFixed(4)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+        <h4>Coordenadas ajustadas</h4>
+
+    <div className="tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Punto</th>
+            <th>Norte</th>
+            <th>Este</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {coordenadasAjustadas.map((punto, index) => (
+            <tr key={index}>
+              <td>{punto.nombre}</td>
+              <td>{punto.norte.toFixed(4)}</td>
+              <td>{punto.este.toFixed(4)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
 </section>
 
 <section className="form-seccion">
