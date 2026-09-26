@@ -3,6 +3,10 @@ function GenerarPlano({ datosProyecto, levantamiento, volver }) {
   const segmentos = levantamiento?.segmentos || []
   const area = levantamiento?.area || 0
   const perimetro = levantamiento?.perimetro || 0
+  const longitudObservada = levantamiento?.longitudObservada ?? null
+const errorCierre = levantamiento?.errorCierre || null
+const ajusteBowditch = levantamiento?.ajusteBowditch || null
+const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
 
   const puntosValidos = puntos.filter(
     (p) =>
@@ -162,14 +166,54 @@ function GenerarPlano({ datosProyecto, levantamiento, volver }) {
           </div>
 
           <div>
-            <span>PERÍMETRO</span>
-            <strong>{Number(perimetro).toFixed(3)} m</strong>
-          </div>
+  <span>
+    {levantamiento?.tipoLevantamiento === 'abierto'
+      ? 'LONGITUD TOTAL'
+      : 'PERÍMETRO'}
+  </span>
+  <strong>{Number(perimetro).toFixed(3)} m</strong>
+</div>
 
-          <div>
-            <span>VÉRTICES</span>
-            <strong>{puntosValidos.length}</strong>
-          </div>
+         <div>
+  <span>TIPO</span>
+  <strong>
+    {levantamiento?.tipoLevantamiento === 'abierto'
+      ? 'RECORRIDO ABIERTO'
+      : 'POLÍGONO CERRADO'}
+  </strong>
+</div>
+<div>
+  <span>VÉRTICES</span>
+  <strong>{puntosValidos.length}</strong>
+</div>
+{levantamiento?.metodoEntrada === 'rumbos' &&
+  longitudObservada !== null && (
+    <div>
+      <span>LONGITUD OBSERVADA</span>
+      <strong>{Number(longitudObservada).toFixed(3)} m</strong>
+    </div>
+    
+  )}
+  {levantamiento?.tipoLevantamiento === 'cerrado' &&
+  levantamiento?.metodoEntrada === 'rumbos' &&
+  errorCierre && (
+    <div>
+      <span>ERROR LINEAL</span>
+      <strong>{errorCierre.errorLineal.toFixed(3)} m</strong>
+    </div>
+  )}
+  {levantamiento?.tipoLevantamiento === 'cerrado' &&
+  levantamiento?.metodoEntrada === 'rumbos' &&
+  errorCierre && (
+    <div>
+      <span>PRECISIÓN</span>
+      <strong>
+        {Number.isFinite(errorCierre.precision)
+          ? `1:${Math.round(errorCierre.precision)}`
+          : 'CIERRE EXACTO'}
+      </strong>
+    </div>
+  )}
         </section>
 
         <section className="form-seccion">
@@ -214,10 +258,94 @@ function GenerarPlano({ datosProyecto, levantamiento, volver }) {
             </table>
           </div>
         </section>
+        {levantamiento?.tipoLevantamiento === 'cerrado' &&
+  levantamiento?.metodoEntrada === 'rumbos' &&
+  ajusteBowditch && (
+    <section className="form-seccion">
+      <div className="form-seccion-titulo">
+        <span>03</span>
 
+        <div>
+          <h3>Ajuste Bowditch</h3>
+          <p>
+            Correcciones aplicadas para distribuir el error de cierre.
+          </p>
+        </div>
+      </div>
+      <div className="tabla-scroll">
+  <table className="tabla-puntos">
+    <thead>
+      <tr>
+        <th>Tramo</th>
+        <th>ΔN</th>
+        <th>ΔE</th>
+        <th>Corr. N</th>
+        <th>Corr. E</th>
+        <th>ΔN ajustado</th>
+        <th>ΔE ajustado</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {ajusteBowditch.map((tramo, index) => (
+        <tr key={index}>
+          <td>
+            {tramo.desde} – {tramo.hasta}
+          </td>
+          <td>{tramo.deltaN.toFixed(4)}</td>
+          <td>{tramo.deltaE.toFixed(4)}</td>
+          <td>{tramo.correccionN.toFixed(4)}</td>
+          <td>{tramo.correccionE.toFixed(4)}</td>
+          <td>{tramo.deltaNAjustado.toFixed(4)}</td>
+          <td>{tramo.deltaEAjustado.toFixed(4)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+    </section>
+  )}
+{levantamiento?.tipoLevantamiento === 'cerrado' &&
+  levantamiento?.metodoEntrada === 'rumbos' &&
+  coordenadasAjustadas.length > 0 && (
+    <section className="form-seccion">
+      <div className="form-seccion-titulo">
+        <span>04</span>
+
+        <div>
+          <h3>Coordenadas ajustadas</h3>
+          <p>
+            Coordenadas obtenidas después de aplicar el ajuste Bowditch.
+          </p>
+        </div>
+      </div>
+
+      <div className="tabla-scroll">
+        <table className="tabla-puntos">
+          <thead>
+            <tr>
+              <th>Punto</th>
+              <th>Norte (N)</th>
+              <th>Este (E)</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {coordenadasAjustadas.map((punto, index) => (
+              <tr key={index}>
+                <td>{punto.nombre}</td>
+                <td>{Number(punto.norte).toFixed(4)}</td>
+                <td>{Number(punto.este).toFixed(4)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )}
         <section className="form-seccion">
           <div className="form-seccion-titulo">
-            <span>03</span>
+            <span>05</span>
 
             <div>
               <h3>Datos del proyecto</h3>
