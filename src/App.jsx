@@ -5,6 +5,7 @@ import Levantamiento from './Levantamiento'
 import GenerarPlano from './GenerarPlano'
 import VerificarPlano from './VerificarPlano'
 import DocumentoFinal from './DocumentoFinal'
+import VistaCAD from './VistaCAD'
 
 function App() {
     const [pantalla, setPantalla] = useState('inicio')
@@ -76,6 +77,17 @@ if (pantalla === 'documento-final') {
       datosProyecto={datosProyecto}
       levantamiento={datosLevantamiento}
       volver={() => setPantalla('verificar-plano')}
+      verCAD={() => setPantalla('vista-cad')}
+    />
+  )
+}
+
+if (pantalla === 'vista-cad') {
+  return (
+    <VistaCAD
+      datosProyecto={datosProyecto}
+      levantamiento={datosLevantamiento}
+      volver={() => setPantalla('documento-final')}
     />
   )
 }

@@ -922,3 +922,47 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .no-imprimir,
+  .btn-volver {
+    display: none !important;
+  }
+
+  .app {
+    background: #ffffff;
+  }
+
+  .app-main {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-seccion {
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .tabla-scroll {
+    overflow: visible;
+  }
+
+  .tabla-puntos {
+    width: 100%;
+  }
+
+  .poligono-svg {
+    max-width: 100%;
+  }
+}
