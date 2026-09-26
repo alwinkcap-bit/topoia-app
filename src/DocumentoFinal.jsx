@@ -1,4 +1,9 @@
-function DocumentoFinal({ datosProyecto, levantamiento, volver }) {
+function DocumentoFinal({
+  datosProyecto,
+  levantamiento,
+  volver,
+  verCAD,
+}) {
       const puntos = levantamiento?.puntos || []
       const segmentos = levantamiento?.segmentos || []
 
@@ -57,7 +62,278 @@ function DocumentoFinal({ datosProyecto, levantamiento, volver }) {
           (punto) => punto.nombre !== 'M1 CIERRE'
         )
       : puntosValidos
+  const exportarDXF = () => {
+    if (coordenadasFinales.length < 2) {
+      alert('No hay suficientes coordenadas para generar el DXF.')
+      return
+    }
 
+    const cerrado = levantamiento?.tipoLevantamiento === 'cerrado'
+
+    const lineas = [
+      '0',
+      'SECTION',
+      '2',
+      'HEADER',
+      '0',
+      'ENDSEC',
+      '0',
+      'SECTION',
+      '2',
+      'ENTITIES',
+    ]
+
+    // Polilínea del levantamiento
+    lineas.push(
+      '0',
+      'LWPOLYLINE',
+      '8',
+      'LINDEROS',
+      '90',
+      String(coordenadasFinales.length),
+      '70',
+      cerrado ? '1' : '0'
+    )
+
+    coordenadasFinales.forEach((punto) => {
+      lineas.push(
+        '10',
+        String(Number(punto.este)),
+        '20',
+        String(Number(punto.norte))
+      )
+    })
+
+    // Puntos y nombres de vértices
+    coordenadasFinales.forEach((punto) => {
+      const este = Number(punto.este)
+      const norte = Number(punto.norte)
+
+      lineas.push(
+        '0',
+        'POINT',
+        '8',
+        'PUNTOS',
+        '10',
+        String(este),
+        '20',
+        String(norte),
+        '30',
+        '0'
+      )
+
+      lineas.push(
+        '0',
+        'TEXT',
+        '8',
+        'TEXTOS',
+        '10',
+        String(este + 1),
+        '20',
+        String(norte + 1),
+        '30',
+        '0',
+        '40',
+        '1.5',
+        '1',
+        String(punto.nombre)
+      )
+    })
+    // Rumbos y distancias de los linderos
+    segmentos.forEach((segmento) => {
+      const desde = coordenadasFinales.find(
+        (punto) => punto.nombre === segmento.desde
+      )
+
+      const hasta = coordenadasFinales.find(
+        (punto) => punto.nombre === segmento.hasta
+      )
+
+      if (!desde || !hasta) return
+
+      const x1 = Number(desde.este)
+      const y1 = Number(desde.norte)
+      const x2 = Number(hasta.este)
+      const y2 = Number(hasta.norte)
+
+      const medioX = (x1 + x2) / 2
+      const medioY = (y1 + y2) / 2
+
+      const dx = x2 - x1
+      const dy = y2 - y1
+      const longitud = Math.sqrt(dx ** 2 + dy ** 2) || 1
+
+      // Desplazamiento perpendicular al lindero
+      const separacion = 3
+
+      const textoX =
+        medioX + (-dy / longitud) * separacion
+
+      const textoY =
+        medioY + (dx / longitud) * separacion
+
+      const distancia =
+        segmento.distancia !== null
+          ? `${Number(segmento.distancia).toFixed(3)} m`
+          : ''
+
+      const rumbo = segmento.rumbo || ''
+
+      lineas.push(
+        '0',
+        'TEXT',
+        '8',
+        'RUMBOS_DISTANCIAS',
+        '10',
+        String(textoX),
+        '20',
+        String(textoY + 1),
+        '30',
+        '0',
+        '40',
+        '1.5',
+        '1',
+        distancia
+      )
+
+      lineas.push(
+        '0',
+        'TEXT',
+        '8',
+        'RUMBOS_DISTANCIAS',
+        '10',
+        String(textoX),
+        '20',
+        String(textoY - 1),
+        '30',
+        '0',
+        '40',
+        '1.5',
+        '1',
+        rumbo
+      )
+    })
+        // Indicador Norte
+    const estesCAD = coordenadasFinales.map(
+      (punto) => Number(punto.este)
+    )
+
+    const nortesCAD = coordenadasFinales.map(
+      (punto) => Number(punto.norte)
+    )
+
+    const maxEste = Math.max(...estesCAD)
+    const maxNorte = Math.max(...nortesCAD)
+
+    const norteX = maxEste + 15
+    const norteY = maxNorte
+
+    // Línea principal de la flecha
+    lineas.push(
+      '0',
+      'LINE',
+      '8',
+      'NORTE',
+      '10',
+      String(norteX),
+      '20',
+      String(norteY),
+      '30',
+      '0',
+      '11',
+      String(norteX),
+      '21',
+      String(norteY + 20),
+      '31',
+      '0'
+    )
+
+    // Lado izquierdo de la punta
+    lineas.push(
+      '0',
+      'LINE',
+      '8',
+      'NORTE',
+      '10',
+      String(norteX),
+      '20',
+      String(norteY + 20),
+      '30',
+      '0',
+      '11',
+      String(norteX - 3),
+      '21',
+      String(norteY + 14),
+      '31',
+      '0'
+    )
+
+    // Lado derecho de la punta
+    lineas.push(
+      '0',
+      'LINE',
+      '8',
+      'NORTE',
+      '10',
+      String(norteX),
+      '20',
+      String(norteY + 20),
+      '30',
+      '0',
+      '11',
+      String(norteX + 3),
+      '21',
+      String(norteY + 14),
+      '31',
+      '0'
+    )
+
+    // Letra N
+    lineas.push(
+      '0',
+      'TEXT',
+      '8',
+      'NORTE',
+      '10',
+      String(norteX - 1.5),
+      '20',
+      String(norteY + 24),
+      '30',
+      '0',
+      '40',
+      '3',
+      '1',
+      'N'
+    )
+    lineas.push(
+      '0',
+      'ENDSEC',
+      '0',
+      'EOF'
+    )
+
+    const contenidoDXF = lineas.join('\n')
+    const blob = new Blob([contenidoDXF], {
+      type: 'application/dxf',
+    })
+
+    const url = URL.createObjectURL(blob)
+    const enlace = document.createElement('a')
+
+    const nombreProyecto =
+      datosProyecto?.nombreProyecto
+        ?.trim()
+        .replace(/[^a-zA-Z0-9_-]+/g, '_') || 'plano_topografico'
+
+    enlace.href = url
+    enlace.download = `${nombreProyecto}.dxf`
+
+    document.body.appendChild(enlace)
+    enlace.click()
+    enlace.remove()
+
+    URL.revokeObjectURL(url)
+  }
   return (
     <div className="nuevo-plano">
       <div className="nuevo-header">
@@ -349,6 +625,29 @@ function DocumentoFinal({ datosProyecto, levantamiento, volver }) {
     </table>
   </div>
 </section>
+<div className="form-acciones no-imprimir">
+  <button
+    type="button"
+    className="btn-continuar"
+    onClick={() => window.print()}
+  >
+    Imprimir / Guardar PDF
+  </button>
+  <button
+  type="button"
+  className="btn-continuar"
+  onClick={exportarDXF}
+>
+    <button
+  type="button"
+  className="btn-continuar"
+  onClick={verCAD}
+>
+  Vista previa CAD
+</button>
+  Exportar DXF / AutoCAD
+</button>
+</div>
       </main>
     </div>
   )
