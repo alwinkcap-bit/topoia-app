@@ -54,10 +54,34 @@ function VistaCAD({ levantamiento, volver }) {
   }
 
   const puntosCAD = crearVistaCAD()
+const calcularEscalaGrafica = () => {
+  if (coordenadasCAD.length < 2) return 10
 
+  const estes = coordenadasCAD.map((p) => Number(p.este))
+  const rangoEste = Math.max(...estes) - Math.min(...estes)
+
+  if (rangoEste <= 20) return 5
+  if (rangoEste <= 50) return 10
+  if (rangoEste <= 100) return 20
+  if (rangoEste <= 250) return 50
+  if (rangoEste <= 500) return 100
+  if (rangoEste <= 1000) return 200
+
+  return 500
+}
+
+const escalaGrafica = calcularEscalaGrafica()
   const puntosPolilinea = puntosCAD
     .map((punto) => `${punto.x},${punto.y}`)
     .join(' ')
+    const centroCAD = {
+  x:
+    puntosCAD.reduce((suma, punto) => suma + punto.x, 0) /
+    (puntosCAD.length || 1),
+  y:
+    puntosCAD.reduce((suma, punto) => suma + punto.y, 0) /
+    (puntosCAD.length || 1),
+}
       const etiquetasSegmentos = segmentos.map((segmento) => {
     const desde = puntosCAD.find(
       (punto) => punto.nombre === segmento.desde
@@ -73,10 +97,27 @@ function VistaCAD({ levantamiento, volver }) {
 const dy = hasta.y - desde.y
 const longitud = Math.sqrt(dx ** 2 + dy ** 2) || 1
 
-const separacion = 32
+const separacion = 50
 
-const offsetX = (-dy / longitud) * separacion
-const offsetY = (dx / longitud) * separacion
+const medioX = (desde.x + hasta.x) / 2
+const medioY = (desde.y + hasta.y) / 2
+
+let normalX = -dy / longitud
+let normalY = dx / longitud
+
+const haciaCentroX = centroCAD.x - medioX
+const haciaCentroY = centroCAD.y - medioY
+
+const apuntaAlCentro =
+  normalX * haciaCentroX + normalY * haciaCentroY > 0
+
+if (apuntaAlCentro) {
+  normalX *= -1
+  normalY *= -1
+}
+
+const offsetX = normalX * separacion
+const offsetY = normalY * separacion
 
 return {
   ...segmento,
@@ -202,6 +243,33 @@ return {
     </text>
   </g>
 ))}
+{/* Escala gráfica */}
+<g transform="translate(80 455)">
+  <line
+    x1="0"
+    y1="0"
+    x2="160"
+    y2="0"
+    stroke="#263238"
+    strokeWidth="3"
+  />
+
+  <line x1="0" y1="-7" x2="0" y2="7" stroke="#263238" strokeWidth="2" />
+  <line x1="80" y1="-7" x2="80" y2="7" stroke="#263238" strokeWidth="2" />
+  <line x1="160" y1="-7" x2="160" y2="7" stroke="#263238" strokeWidth="2" />
+
+  <text x="0" y="22" textAnchor="middle" className="vertice-texto">
+    0
+  </text>
+
+  <text x="80" y="22" textAnchor="middle" className="vertice-texto">
+    {escalaGrafica / 2}
+  </text>
+
+  <text x="160" y="22" textAnchor="middle" className="vertice-texto">
+    {escalaGrafica} m
+  </text>
+</g>
               </svg>
             ) : (
               <div className="plano-vacio">
