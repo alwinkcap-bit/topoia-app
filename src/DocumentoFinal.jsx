@@ -633,18 +633,20 @@ function DocumentoFinal({
   >
     Imprimir / Guardar PDF
   </button>
+
   <button
+    type="button"
+    className="btn-continuar"
+    onClick={verCAD}
+  >
+    Vista previa CAD
+  </button>
+
+<button
   type="button"
   className="btn-continuar"
   onClick={exportarDXF}
 >
-    <button
-  type="button"
-  className="btn-continuar"
-  onClick={verCAD}
->
-  Vista previa CAD
-</button>
   Exportar DXF / AutoCAD
 </button>
 </div>
