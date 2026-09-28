@@ -524,6 +524,16 @@ const segmentos = useMemo(() => {
 const errorCierre = calcularErrorCierre()
 const ajusteBowditch = calcularAjusteBowditch()
 const coordenadasAjustadas = calcularCoordenadasAjustadas()
+const coordenadasFinalesAjustadas = coordenadasAjustadas.filter(
+  (punto) => punto.nombre !== 'M1 CIERRE'
+)
+
+const areaAjustada =
+  tipoLevantamiento === 'cerrado' &&
+  metodoEntrada === 'rumbos' &&
+  coordenadasFinalesAjustadas.length >= 3
+    ? calcularArea(coordenadasFinalesAjustadas)
+    : area
 
 const longitudObservada = useMemo(() => {
   if (metodoEntrada !== 'rumbos') return null
@@ -1300,11 +1310,12 @@ const area = useMemo(() => {
   puntos: puntosActivos,
   segmentos,
   perimetro,
-  area,
-  longitudObservada,
-  errorCierre,
-  ajusteBowditch,
-  coordenadasAjustadas,
+area,
+areaAjustada,
+longitudObservada,
+errorCierre,
+ajusteBowditch,
+coordenadasAjustadas,
 })
             }
           >

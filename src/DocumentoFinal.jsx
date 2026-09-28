@@ -459,7 +459,9 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
       <strong>
         {levantamiento?.tipoLevantamiento === 'abierto'
           ? 'No aplica'
-          : `${Number(levantamiento?.area || 0).toFixed(3)} m²`}
+          : `${Number(
+    levantamiento?.areaAjustada ?? levantamiento?.area ?? 0
+  ).toFixed(3)} m²`}
       </strong>
     </div>
 
