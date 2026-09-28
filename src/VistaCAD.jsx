@@ -16,6 +16,7 @@ function VistaCAD({ levantamiento, volver }) {
         )
       : puntosValidos
         const segmentos = levantamiento?.segmentos || []
+        const ajusteBowditch = levantamiento?.ajusteBowditch || []
 
         const crearVistaCAD = () => {
     if (coordenadasCAD.length < 2) return []
@@ -277,6 +278,58 @@ return {
               </div>
             )}
           </div>
+          {/* Cuadro de coordenadas */}
+{coordenadasCAD.length > 0 && (
+  <div className="cuadro-coordenadas-cad">
+    <h3>Cuadro de Coordenadas Ajustadas</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Punto</th>
+          <th>Norte (m)</th>
+          <th>Este (m)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {coordenadasCAD.map((punto, index) => (
+          <tr key={`coord-${punto.nombre}-${index}`}>
+            <td>{punto.nombre}</td>
+            <td>{Number(punto.norte).toFixed(3)}</td>
+            <td>{Number(punto.este).toFixed(3)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+{/* Cuadro de ajuste Bowditch */}
+{ajusteBowditch.length > 0 && (
+  <div className="cuadro-coordenadas-cad">
+    <h3>Ajuste Bowditch</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tramo</th>
+          <th>Corrección N (m)</th>
+          <th>Corrección E (m)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {ajusteBowditch.map((tramo, index) => (
+          <tr key={`bowditch-${index}`}>
+            <td>{tramo.desde} → {tramo.hasta}</td>
+            <td>{Number(tramo.correccionN).toFixed(4)}</td>
+            <td>{Number(tramo.correccionE).toFixed(4)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
         </section>
       </main>
     </div>
