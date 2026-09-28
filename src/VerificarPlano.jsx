@@ -14,13 +14,25 @@ function VerificarPlano({ datosProyecto, levantamiento, volver, continuar }) {
     levantamiento?.tipoLevantamiento === 'cerrado' &&
     levantamiento?.metodoEntrada === 'rumbos'
 
-  const cierreDisponible =
-    !requiereControlCierre ||
-    levantamiento?.errorCierre != null
+ const cierreDisponible =
+  !requiereControlCierre ||
+  levantamiento?.errorCierre != null
+
+const cierreAceptable =
+  !requiereControlCierre ||
+  (
+    cierreDisponible &&
+    (
+      !Number.isFinite(levantamiento.errorCierre.precision) ||
+      levantamiento.errorCierre.precision >= 1000
+    )
+  )
+
 const planoListo =
   verticesValidos &&
   coordenadasValidas &&
-  cierreDisponible
+  cierreDisponible &&
+  cierreAceptable
 
   return (
     <div className="nuevo-plano">
@@ -186,17 +198,23 @@ const planoListo =
           : '⚠ Revisar coordenadas'}
       </strong>
     </div> 
-    {requiereControlCierre && (
+   {requiereControlCierre && (
   <div>
     <span>CONTROL DE CIERRE</span>
     <strong>
-      {cierreDisponible
-        ? `✓ Error: ${levantamiento.errorCierre.errorLineal.toFixed(3)} m · ${
-            Number.isFinite(levantamiento.errorCierre.precision)
-              ? `Precisión 1:${Math.round(levantamiento.errorCierre.precision)}`
-              : 'Cierre exacto'
-          }`
-        : '⚠ Revisar datos de cierre'}
+      {!cierreDisponible
+        ? '⚠ Revisar datos de cierre'
+        : !cierreAceptable
+          ? `⚠ Cierre fuera del nivel configurado · Precisión 1:${Math.round(
+              levantamiento.errorCierre.precision
+            )} · Mínimo 1:1000`
+          : Number.isFinite(levantamiento.errorCierre.precision)
+            ? `✓ Error: ${levantamiento.errorCierre.errorLineal.toFixed(
+                3
+              )} m · Precisión 1:${Math.round(
+                levantamiento.errorCierre.precision
+              )}`
+            : '✓ Cierre exacto'}
     </strong>
   </div>
 )}
