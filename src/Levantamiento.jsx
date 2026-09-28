@@ -535,6 +535,20 @@ const areaAjustada =
     ? calcularArea(coordenadasFinalesAjustadas)
     : area
 
+const perimetroAjustado =
+  tipoLevantamiento === 'cerrado' &&
+  metodoEntrada === 'rumbos' &&
+  coordenadasFinalesAjustadas.length >= 3
+    ? coordenadasFinalesAjustadas.reduce((total, punto, index) => {
+        const siguiente =
+          coordenadasFinalesAjustadas[
+            (index + 1) % coordenadasFinalesAjustadas.length
+          ]
+
+        return total + (calcularDistancia(punto, siguiente) || 0)
+      }, 0)
+    : perimetro
+
 const longitudObservada = useMemo(() => {
   if (metodoEntrada !== 'rumbos') return null
 
@@ -1309,7 +1323,8 @@ const area = useMemo(() => {
   tipoLevantamiento,
   puntos: puntosActivos,
   segmentos,
-  perimetro,
+ perimetro,
+perimetroAjustado,
 area,
 areaAjustada,
 longitudObservada,

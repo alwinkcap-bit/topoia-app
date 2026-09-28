@@ -471,9 +471,13 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
           ? 'LONGITUD TOTAL'
           : 'PERÍMETRO'}
       </span>
-      <strong>
-        {`${Number(levantamiento?.perimetro || 0).toFixed(3)} m`}
-      </strong>
+     <strong>
+  {`${Number(
+    levantamiento?.perimetroAjustado ??
+      levantamiento?.perimetro ??
+      0
+  ).toFixed(3)} m`}
+</strong>
     </div>
 
     {levantamiento?.errorCierre && (
