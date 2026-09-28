@@ -1136,38 +1136,49 @@ const area = useMemo(() => {
 {tipoLevantamiento === 'cerrado' &&
   metodoEntrada === 'rumbos' && (
     errorCierre ? (
-      <div className="resumen-calculos">
-        <div>
-          <span>ERROR NORTE</span>
-          <strong>{errorCierre.errorNorte.toFixed(2)} m</strong>
+      <>
+        <div className="resumen-calculos">
+          <div>
+            <span>ERROR NORTE</span>
+            <strong>{errorCierre.errorNorte.toFixed(2)} m</strong>
+          </div>
+
+          <div>
+            <span>ERROR ESTE</span>
+            <strong>{errorCierre.errorEste.toFixed(2)} m</strong>
+          </div>
+
+          <div>
+            <span>ERROR LINEAL</span>
+            <strong>{errorCierre.errorLineal.toFixed(2)} m</strong>
+          </div>
+
+          <div>
+            <span>PRECISIÓN</span>
+            <strong>
+              {Number.isFinite(errorCierre.precision)
+                ? `1:${Math.round(errorCierre.precision)}`
+                : 'CIERRE EXACTO'}
+            </strong>
+          </div>
         </div>
 
-        <div>
-          <span>ERROR ESTE</span>
-          <strong>{errorCierre.errorEste.toFixed(2)} m</strong>
-        </div>
-
-        <div>
-          <span>ERROR LINEAL</span>
-          <strong>{errorCierre.errorLineal.toFixed(2)} m</strong>
-        </div>
-
-        <div>
-          <span>PRECISIÓN</span>
-          <strong>
-            {Number.isFinite(errorCierre.precision)
-              ? `1:${Math.round(errorCierre.precision)}`
-              : 'CIERRE EXACTO'}
-          </strong>
-        </div>
-      </div>
+        {Number.isFinite(errorCierre.precision) &&
+          errorCierre.precision < 1000 && (
+            <div className="alerta-cierre">
+              ⚠️ Cierre topográfico fuera del nivel de control configurado.
+              Revise rumbos, cuadrantes (N/S - E/W) y distancias antes de
+              aplicar el ajuste Bowditch.
+            </div>
+          )}
+      </>
     ) : (
       <div>
-  <p>
-    Complete todos los rumbos y distancias, incluido el tramo de cierre,
-    para calcular el error y la precisión.
-  </p>
-</div>
+        <p>
+          Complete todos los rumbos y distancias, incluido el tramo de cierre,
+          para calcular el error y la precisión.
+        </p>
+      </div>
     )
   )}
 {ajusteBowditch && (
