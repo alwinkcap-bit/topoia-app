@@ -14,12 +14,18 @@ function DocumentoFinal({
       Number.isFinite(Number(p.norte)) &&
       Number.isFinite(Number(p.este))
   )
+  const coordenadasFinales =
+    levantamiento?.coordenadasAjustadas?.length > 0
+      ? levantamiento.coordenadasAjustadas.filter(
+          (punto) => punto.nombre !== 'M1 CIERRE'
+        )
+      : puntosValidos
 
   const crearPoligono = () => {
-    if (puntosValidos.length < 3) return []
+    if (coordenadasFinales.length < 3) return []
 
-    const nortes = puntosValidos.map((p) => Number(p.norte))
-    const estes = puntosValidos.map((p) => Number(p.este))
+   const nortes = coordenadasFinales.map((p) => Number(p.norte))
+const estes = coordenadasFinales.map((p) => Number(p.este))
 
     const minN = Math.min(...nortes)
     const maxN = Math.max(...nortes)
@@ -44,7 +50,7 @@ function DocumentoFinal({
     const offsetX = (ancho - anchoReal) / 2
     const offsetY = (alto - altoReal) / 2
 
-    return puntosValidos.map((p) => ({
+    return coordenadasFinales.map((p) => ({
       ...p,
       x: offsetX + (Number(p.este) - minE) * escala,
       y: alto - (offsetY + (Number(p.norte) - minN) * escala),
@@ -56,12 +62,7 @@ function DocumentoFinal({
   const polygonPoints = puntosGrafico
     .map((p) => `${p.x},${p.y}`)
     .join(' ')
-  const coordenadasFinales =
-    levantamiento?.coordenadasAjustadas?.length > 0
-      ? levantamiento.coordenadasAjustadas.filter(
-          (punto) => punto.nombre !== 'M1 CIERRE'
-        )
-      : puntosValidos
+  
   const exportarDXF = () => {
     if (coordenadasFinales.length < 2) {
       alert('No hay suficientes coordenadas para generar el DXF.')
