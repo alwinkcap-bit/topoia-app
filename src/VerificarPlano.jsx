@@ -150,9 +150,13 @@ const planoListo =
     <div>
       <span>ÁREA</span>
       <strong>
-        {levantamiento?.area != null
-          ? `${Number(levantamiento.area).toFixed(3)} m²`
-          : '—'}
+       {levantamiento?.areaAjustada != null ||
+levantamiento?.area != null
+  ? `${Number(
+      levantamiento?.areaAjustada ??
+        levantamiento?.area
+    ).toFixed(3)} m²`
+  : 'No disponible'}
       </strong>
     </div>
 

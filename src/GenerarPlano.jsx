@@ -1,8 +1,15 @@
 function GenerarPlano({ datosProyecto, levantamiento, volver, continuar }) {
   const puntos = levantamiento?.puntos || []
   const segmentos = levantamiento?.segmentos || []
-  const area = levantamiento?.area || 0
-  const perimetro = levantamiento?.perimetro || 0
+  const area =
+  levantamiento?.areaAjustada ??
+  levantamiento?.area ??
+  0
+
+const perimetro =
+  levantamiento?.perimetroAjustado ??
+  levantamiento?.perimetro ??
+  0
   const longitudObservada = levantamiento?.longitudObservada ?? null
 const errorCierre = levantamiento?.errorCierre || null
 const ajusteBowditch = levantamiento?.ajusteBowditch || null
