@@ -12,12 +12,15 @@ function NuevoPlano({ volver, continuar }) {
 
   const [datos, setDatos] = useState(datosGuardados || {
     nombreProyecto: '',
+    tipoPlano: '',
     provincia: '',
     distrito: '',
     corregimiento: '',
     localidad: '',
     propietario: '',
     cedulaPropietario: '',
+    folioReal: '',
+    areaFolioReal: '',
     numeroPredio: '',
     cedulaCatastral: '',
     proposito: '',
@@ -107,6 +110,22 @@ function NuevoPlano({ volver, continuar }) {
                 required
               />
             </label>
+            <label className="campo">
+  Tipo de plano
+  <select
+    name="tipoPlano"
+    value={datos.tipoPlano}
+    onChange={actualizar}
+    required
+  >
+    <option value="">Seleccione...</option>
+    <option value="general">Plano general</option>
+    <option value="segregacion">Segregación</option>
+    <option value="medidas-linderos">Medidas y linderos</option>
+    <option value="ley-37">Ley 37</option>
+    <option value="lotificacion">Lotificación</option>
+  </select>
+</label>
 
             <label className="campo">
               Propósito del plano
@@ -214,6 +233,27 @@ function NuevoPlano({ volver, continuar }) {
               />
             </label>
 
+            <label className="campo">
+  Folio Real
+  <input
+    name="folioReal"
+    value={datos.folioReal}
+    onChange={actualizar}
+    placeholder="Número de Folio Real"
+  />
+</label>
+<label className="campo">
+  Área del Folio Real (m²)
+  <input
+    type="number"
+    name="areaFolioReal"
+    value={datos.areaFolioReal}
+    onChange={actualizar}
+    placeholder="Ej. 2500.00"
+    min="0"
+    step="0.01"
+  />
+</label>
             <label className="campo">
               Cédula / identificación
               <input

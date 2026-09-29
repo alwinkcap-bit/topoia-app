@@ -6,6 +6,13 @@ function DocumentoFinal({
 }) {
       const puntos = levantamiento?.puntos || []
       const segmentos = levantamiento?.segmentos || []
+      const areaFolioReal = Number(datosProyecto?.areaFolioReal || 0)
+
+const areaSegregar = Number(
+  levantamiento?.areaAjustada ?? levantamiento?.area ?? 0
+)
+
+const restoLibre = areaFolioReal - areaSegregar
 
   const puntosValidos = puntos.filter(
     (p) =>
@@ -175,7 +182,7 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
 
       const distancia =
         segmento.distancia !== null
-          ? `${Number(segmento.distancia).toFixed(3)} m`
+          ? `${Number(segmento.distancia).toFixed(2)} m`
           : ''
 
       const rumbo = segmento.rumbo || ''
@@ -461,7 +468,7 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
           ? 'No aplica'
           : `${Number(
     levantamiento?.areaAjustada ?? levantamiento?.area ?? 0
-  ).toFixed(3)} m²`}
+  ).toFixed(2)} m²`}
       </strong>
     </div>
 
@@ -476,7 +483,7 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     levantamiento?.perimetroAjustado ??
       levantamiento?.perimetro ??
       0
-  ).toFixed(3)} m`}
+  ).toFixed(2)} m`}
 </strong>
     </div>
 
@@ -492,6 +499,35 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     )}
   </div>
 </section>
+{datosProyecto?.tipoPlano === 'segregacion' && (
+  <section className="form-seccion">
+    <div className="form-seccion-titulo">
+      <span>03</span>
+
+      <div>
+        <h3>Detalle de Áreas</h3>
+        <p>Resumen de áreas correspondiente a la segregación.</p>
+      </div>
+    </div>
+
+    <div className="datos-preview">
+      <div>
+        <span>ÁREA DEL FOLIO REAL</span>
+        <strong>{areaFolioReal.toFixed(2)} m²</strong>
+      </div>
+
+      <div>
+        <span>ÁREA A SEGREGAR</span>
+        <strong>{areaSegregar.toFixed(2)} m²</strong>
+      </div>
+
+      <div>
+        <span>RESTO LIBRE DEL FOLIO REAL</span>
+        <strong>{restoLibre.toFixed(2)} m²</strong>
+      </div>
+    </div>
+  </section>
+)}
 <section className="form-seccion">
   <div className="form-seccion-titulo">
     <span>03</span>
