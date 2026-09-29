@@ -55,6 +55,26 @@ function VistaCAD({ levantamiento, volver }) {
   }
 
   const puntosCAD = crearVistaCAD()
+  const calcularFactorVista = () => {
+  if (coordenadasCAD.length < 2) return 1
+
+  const nortes = coordenadasCAD.map((p) => Number(p.norte))
+  const estes = coordenadasCAD.map((p) => Number(p.este))
+
+  const rangoN = Math.max(...nortes) - Math.min(...nortes) || 1
+  const rangoE = Math.max(...estes) - Math.min(...estes) || 1
+
+  const ancho = 800
+  const alto = 500
+  const margen = 80
+
+  return Math.min(
+    (ancho - margen * 2) / rangoE,
+    (alto - margen * 2) / rangoN
+  )
+}
+
+const factorVista = calcularFactorVista()
 const calcularEscalaGrafica = () => {
   if (coordenadasCAD.length < 2) return 10
 
@@ -72,6 +92,10 @@ const calcularEscalaGrafica = () => {
 }
 
 const escalaGrafica = calcularEscalaGrafica()
+
+const largoEscalaGrafica = escalaGrafica * factorVista
+const mitadEscalaGrafica = largoEscalaGrafica / 2
+
   const puntosPolilinea = puntosCAD
     .map((punto) => `${punto.x},${punto.y}`)
     .join(' ')
@@ -249,25 +273,51 @@ return {
   <line
     x1="0"
     y1="0"
-    x2="160"
+    x2={largoEscalaGrafica}
     y2="0"
     stroke="#263238"
     strokeWidth="3"
   />
 
   <line x1="0" y1="-7" x2="0" y2="7" stroke="#263238" strokeWidth="2" />
-  <line x1="80" y1="-7" x2="80" y2="7" stroke="#263238" strokeWidth="2" />
-  <line x1="160" y1="-7" x2="160" y2="7" stroke="#263238" strokeWidth="2" />
+
+  <line
+    x1={mitadEscalaGrafica}
+    y1="-7"
+    x2={mitadEscalaGrafica}
+    y2="7"
+    stroke="#263238"
+    strokeWidth="2"
+  />
+
+  <line
+    x1={largoEscalaGrafica}
+    y1="-7"
+    x2={largoEscalaGrafica}
+    y2="7"
+    stroke="#263238"
+    strokeWidth="2"
+  />
 
   <text x="0" y="22" textAnchor="middle" className="vertice-texto">
     0
   </text>
 
-  <text x="80" y="22" textAnchor="middle" className="vertice-texto">
+  <text
+    x={mitadEscalaGrafica}
+    y="22"
+    textAnchor="middle"
+    className="vertice-texto"
+  >
     {escalaGrafica / 2}
   </text>
 
-  <text x="160" y="22" textAnchor="middle" className="vertice-texto">
+  <text
+    x={largoEscalaGrafica}
+    y="22"
+    textAnchor="middle"
+    className="vertice-texto"
+  >
     {escalaGrafica} m
   </text>
 </g>
