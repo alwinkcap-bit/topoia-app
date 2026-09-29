@@ -621,7 +621,7 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
 
             <td>
               {segmento.distancia !== null
-                ? `${segmento.distancia.toFixed(3)} m`
+                ? `${segmento.distancia.toFixed(2)} m`
                 : '—'}
             </td>
 

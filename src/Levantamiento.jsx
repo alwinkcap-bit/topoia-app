@@ -1133,7 +1133,12 @@ const perimetroAjustado =
               <span>
   {tipoLevantamiento === 'cerrado' ? 'PERÍMETRO' : 'LONGITUD TOTAL'}
 </span>
-              <strong>{perimetro.toFixed(2)} m</strong>
+              <strong>
+  {(tipoLevantamiento === 'cerrado' && metodoEntrada === 'rumbos'
+    ? perimetroAjustado
+    : perimetro
+  ).toFixed(3)} m
+</strong>
             </div>
 {metodoEntrada === 'rumbos' && (
   <div>
@@ -1150,7 +1155,7 @@ const perimetroAjustado =
               <span>ÁREA</span>
               <strong>
   {tipoLevantamiento === 'cerrado'
-    ? `${area.toFixed(2)} m²`
+    ? `${areaAjustada.toFixed(2)} m²`
     : 'NO APLICA'}
 </strong>
             </div>
