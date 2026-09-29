@@ -528,27 +528,6 @@ const coordenadasFinalesAjustadas = coordenadasAjustadas.filter(
   (punto) => punto.nombre !== 'M1 CIERRE'
 )
 
-const areaAjustada =
-  tipoLevantamiento === 'cerrado' &&
-  metodoEntrada === 'rumbos' &&
-  coordenadasFinalesAjustadas.length >= 3
-    ? calcularArea(coordenadasFinalesAjustadas)
-    : area
-
-const perimetroAjustado =
-  tipoLevantamiento === 'cerrado' &&
-  metodoEntrada === 'rumbos' &&
-  coordenadasFinalesAjustadas.length >= 3
-    ? coordenadasFinalesAjustadas.reduce((total, punto, index) => {
-        const siguiente =
-          coordenadasFinalesAjustadas[
-            (index + 1) % coordenadasFinalesAjustadas.length
-          ]
-
-        return total + (calcularDistancia(punto, siguiente) || 0)
-      }, 0)
-    : perimetro
-
 const longitudObservada = useMemo(() => {
   if (metodoEntrada !== 'rumbos') return null
 
@@ -590,6 +569,26 @@ const area = useMemo(() => {
 
   return calcularArea(puntosActivos)
 }, [puntosActivos, tipoLevantamiento])
+const areaAjustada =
+  tipoLevantamiento === 'cerrado' &&
+  metodoEntrada === 'rumbos' &&
+  coordenadasFinalesAjustadas.length >= 3
+    ? calcularArea(coordenadasFinalesAjustadas)
+    : area
+
+const perimetroAjustado =
+  tipoLevantamiento === 'cerrado' &&
+  metodoEntrada === 'rumbos' &&
+  coordenadasFinalesAjustadas.length >= 3
+    ? coordenadasFinalesAjustadas.reduce((total, punto, index) => {
+        const siguiente =
+          coordenadasFinalesAjustadas[
+            (index + 1) % coordenadasFinalesAjustadas.length
+          ]
+
+        return total + (calcularDistancia(punto, siguiente) || 0)
+      }, 0)
+    : perimetro
 
   return (
     <div className="nuevo-plano">
