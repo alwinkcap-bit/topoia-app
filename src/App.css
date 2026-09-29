@@ -949,10 +949,8 @@ footer {
   }
 
   .form-seccion {
-    box-shadow: none;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+  box-shadow: none;
+}
 
   .tabla-scroll {
     overflow: visible;
@@ -965,4 +963,22 @@ footer {
   .poligono-svg {
     max-width: 100%;
   }
+  .form-seccion {
+  margin-bottom: 8mm;
+  padding: 8mm;
+}
+
+.form-seccion-header {
+  margin-bottom: 5mm;
+}
+
+.tabla-puntos th,
+.tabla-puntos td {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.poligono-svg {
+  max-height: 105mm;
+}
 }
