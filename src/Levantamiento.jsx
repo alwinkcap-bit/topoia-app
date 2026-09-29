@@ -404,7 +404,9 @@ const [puntos, setPuntos] = useState(
     { id: 3, nombre: 'M3', norte: '', este: '', descripcion: '' },
   ]
 )
-
+const [colindancias, setColindancias] = useState(
+  datosGuardados?.colindancias || {}
+)
  useEffect(() => {
   try {
     localStorage.setItem(
@@ -416,7 +418,9 @@ const [puntos, setPuntos] = useState(
   rumbosDistancias,
   cierreObservado,
   puntos,
+  colindancias,
 })
+
     )
   } catch {
     // Si localStorage no está disponible, la app continúa normalmente.

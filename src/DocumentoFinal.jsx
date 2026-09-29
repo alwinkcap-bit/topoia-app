@@ -403,6 +403,10 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
         .join(', ') || '—'}
     </strong>
   </div>
+<div>
+  <span>FOLIO REAL</span>
+  <strong>{datosProyecto?.folioReal || '—'}</strong>
+</div>
 
   <div>
     <span>PREDIO</span>
