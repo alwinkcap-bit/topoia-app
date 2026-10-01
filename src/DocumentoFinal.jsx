@@ -120,6 +120,54 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
   }
 
   const detallePI = crearDetallePI()
+
+  const crearDetalleAmarre = () => {
+    const referencia = levantamiento?.detalleAmarre
+    const puntoEnlace = coordenadasFinales.find(
+      (punto) => punto.nombre === referencia?.puntoEnlace
+    )
+
+    if (!referencia || !puntoEnlace) return null
+
+    const norteReferencia = Number(referencia.norte)
+    const esteReferencia = Number(referencia.este)
+    const norteEnlace = Number(puntoEnlace.norte)
+    const esteEnlace = Number(puntoEnlace.este)
+
+    if (
+      ![
+        norteReferencia,
+        esteReferencia,
+        norteEnlace,
+        esteEnlace,
+      ].every(Number.isFinite)
+    ) {
+      return null
+    }
+
+    const deltaE = esteEnlace - esteReferencia
+    const deltaN = norteEnlace - norteReferencia
+    const longitud = Math.hypot(deltaE, deltaN)
+
+    if (longitud === 0) return null
+
+    const escalaAmarre = 220 / longitud
+    const dx = deltaE * escalaAmarre
+    const dy = -deltaN * escalaAmarre
+
+    return {
+      referencia: {
+        x: 350 - dx / 2,
+        y: 90 - dy / 2,
+      },
+      enlace: {
+        x: 350 + dx / 2,
+        y: 90 + dy / 2,
+      },
+    }
+  }
+
+  const detalleAmarreGrafico = crearDetalleAmarre()
   
   const exportarDXF = () => {
     if (coordenadasFinales.length < 2) {
@@ -703,6 +751,89 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
           className="vertice-texto"
         >
           {levantamiento.tramoPI.rumbo}
+        </text>
+      </svg>
+    </div>
+  </section>
+)}
+
+{levantamiento?.tramoAmarre && detalleAmarreGrafico && (
+  <section className="form-seccion">
+    <div className="form-seccion-titulo">
+      <span>DA</span>
+
+      <div>
+        <h3>Detalle de Amarre</h3>
+        <p>
+          Representación independiente de la referencia y su punto de enlace.
+        </p>
+      </div>
+    </div>
+
+    <div className="plano-preview">
+      <svg
+        viewBox="0 0 700 180"
+        className="poligono-svg"
+        role="img"
+        aria-label="Detalle gráfico de amarre"
+      >
+        <line
+          x1={detalleAmarreGrafico.referencia.x}
+          y1={detalleAmarreGrafico.referencia.y}
+          x2={detalleAmarreGrafico.enlace.x}
+          y2={detalleAmarreGrafico.enlace.y}
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+
+        <circle
+          cx={detalleAmarreGrafico.referencia.x}
+          cy={detalleAmarreGrafico.referencia.y}
+          r="6"
+          className="vertice"
+        />
+
+        <circle
+          cx={detalleAmarreGrafico.enlace.x}
+          cy={detalleAmarreGrafico.enlace.y}
+          r="6"
+          className="vertice"
+        />
+
+        <text
+          x={detalleAmarreGrafico.referencia.x}
+          y={detalleAmarreGrafico.referencia.y - 18}
+          textAnchor="middle"
+          className="vertice-texto"
+        >
+          REFERENCIA
+        </text>
+
+        <text
+          x={detalleAmarreGrafico.enlace.x}
+          y={detalleAmarreGrafico.enlace.y - 18}
+          textAnchor="middle"
+          className="vertice-texto"
+        >
+          {levantamiento.detalleAmarre.puntoEnlace}
+        </text>
+
+        <text
+          x={(detalleAmarreGrafico.referencia.x + detalleAmarreGrafico.enlace.x) / 2 + 35}
+          y={(detalleAmarreGrafico.referencia.y + detalleAmarreGrafico.enlace.y) / 2 - 18}
+          textAnchor="middle"
+          className="vertice-texto"
+        >
+          {Number(levantamiento.tramoAmarre.distancia).toFixed(2)} m
+        </text>
+
+        <text
+          x={(detalleAmarreGrafico.referencia.x + detalleAmarreGrafico.enlace.x) / 2 + 55}
+          y={(detalleAmarreGrafico.referencia.y + detalleAmarreGrafico.enlace.y) / 2 + 22}
+          textAnchor="middle"
+          className="vertice-texto"
+        >
+          {levantamiento.tramoAmarre.rumbo}
         </text>
       </svg>
     </div>
