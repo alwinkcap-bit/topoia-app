@@ -893,6 +893,8 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
           <th>Estación</th>
           <th>Distancia</th>
           <th>Rumbo</th>
+          <th>Colindante</th>
+          <th>Vialidad / Acceso</th>
         </tr>
       </thead>
 
@@ -910,6 +912,27 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
             </td>
 
             <td>{segmento.rumbo}</td>
+
+            <td>
+              {levantamiento?.colindancias?.[
+                `${segmento.desde}-${segmento.hasta}`
+              ] || '—'}
+            </td>
+
+            <td>
+              {(() => {
+                const via =
+                  levantamiento?.vialidad?.[
+                    `${segmento.desde}-${segmento.hasta}`
+                  ]
+
+                if (!via?.nombreVia) return '—'
+
+                return `${via.nombreVia}${
+                  via.anchoVia ? ` — ${Number(via.anchoVia).toFixed(2)} m` : ''
+                }`
+              })()}
+            </td>
           </tr>
         ))}
       </tbody>

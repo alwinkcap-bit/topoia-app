@@ -1817,6 +1817,7 @@ const tramoPI = datosPIValidos
   puntos: puntosActivos,
   segmentos,
   colindancias,
+  vialidad,
   puntosPI,
   tramoPI,
   detalleAmarre,
