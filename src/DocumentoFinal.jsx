@@ -89,6 +89,37 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
   const polygonPoints = puntosGrafico
     .map((p) => `${p.x},${p.y}`)
     .join(' ')
+
+  const crearDetallePI = () => {
+    const pi1 = levantamiento?.puntosPI?.pi1
+    const pi2 = levantamiento?.puntosPI?.pi2
+
+    if (!pi1 || !pi2) return null
+
+    const deltaE = Number(pi2.este) - Number(pi1.este)
+    const deltaN = Number(pi2.norte) - Number(pi1.norte)
+    const longitud = Math.hypot(deltaE, deltaN)
+
+    if (!Number.isFinite(longitud) || longitud === 0) return null
+
+    const escalaPI = 220 / longitud
+
+    const dx = deltaE * escalaPI
+    const dy = -deltaN * escalaPI
+
+    return {
+      pi1: {
+        x: 350 - dx / 2,
+        y: 90 - dy / 2,
+      },
+      pi2: {
+        x: 350 + dx / 2,
+        y: 90 + dy / 2,
+      },
+    }
+  }
+
+  const detallePI = crearDetallePI()
   
   const exportarDXF = () => {
     if (coordenadasFinales.length < 2) {
@@ -637,22 +668,22 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
         aria-label="Detalle gráfico PI-1 a PI-2"
       >
         <line
-          x1="120"
-          y1="90"
-          x2="580"
-          y2="90"
+          x1={detallePI?.pi1.x}
+          y1={detallePI?.pi1.y}
+          x2={detallePI?.pi2.x}
+          y2={detallePI?.pi2.y}
           stroke="currentColor"
           strokeWidth="2"
         />
 
-        <circle cx="120" cy="90" r="6" className="vertice" />
-        <circle cx="580" cy="90" r="6" className="vertice" />
+        <circle cx={detallePI?.pi1.x} cy={detallePI?.pi1.y} r="6" className="vertice" />
+        <circle cx={detallePI?.pi2.x} cy={detallePI?.pi2.y} r="6" className="vertice" />
 
-        <text x="120" y="65" textAnchor="middle" className="vertice-texto">
+        <text x={detallePI?.pi1.x} y={detallePI?.pi1.y - 18} textAnchor="middle" className="vertice-texto">
           PI-1
         </text>
 
-        <text x="580" y="65" textAnchor="middle" className="vertice-texto">
+        <text x={detallePI?.pi2.x} y={detallePI?.pi2.y - 18} textAnchor="middle" className="vertice-texto">
           PI-2
         </text>
 
