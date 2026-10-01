@@ -502,6 +502,12 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
         .join(', ') || '—'}
     </strong>
   </div>
+
+  <div>
+    <span>CÓDIGO DE UBICACIÓN</span>
+    <strong>{datosProyecto?.codigoUbicacion || '—'}</strong>
+  </div>
+
 <div>
   <span>FOLIO REAL</span>
   <strong>{datosProyecto?.folioReal || '—'}</strong>
@@ -839,6 +845,46 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     </div>
   </section>
 )}
+
+<section className="form-seccion">
+  <div className="form-seccion-titulo">
+    <span>LR</span>
+
+    <div>
+      <h3>Localización Regional</h3>
+      <p>
+        Referencia administrativa para la ubicación regional del predio.
+      </p>
+    </div>
+  </div>
+
+  <div className="datos-preview">
+    <div>
+      <span>PROVINCIA</span>
+      <strong>{datosProyecto?.provincia || 'Herrera'}</strong>
+    </div>
+
+    <div>
+      <span>DISTRITO</span>
+      <strong>{datosProyecto?.distrito || '—'}</strong>
+    </div>
+
+    <div>
+      <span>CORREGIMIENTO</span>
+      <strong>{datosProyecto?.corregimiento || '—'}</strong>
+    </div>
+
+    <div>
+      <span>CÓDIGO DE UBICACIÓN</span>
+      <strong>{datosProyecto?.codigoUbicacion || '—'}</strong>
+    </div>
+
+    <div>
+      <span>LUGAR / LOCALIDAD</span>
+      <strong>{datosProyecto?.localidad || '—'}</strong>
+    </div>
+  </div>
+</section>
 
 <section className="form-seccion">
   <div className="form-seccion-titulo">
