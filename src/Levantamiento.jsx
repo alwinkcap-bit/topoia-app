@@ -407,6 +407,21 @@ const [puntos, setPuntos] = useState(
 const [colindancias, setColindancias] = useState(
   datosGuardados?.colindancias || {}
 )
+const [puntosPI, setPuntosPI] = useState(
+  datosGuardados?.puntosPI || {
+    pi1: {
+      nombre: 'PI-1',
+      norte: '',
+      este: '',
+    },
+    pi2: {
+      nombre: 'PI-2',
+      norte: '',
+      este: '',
+    },
+  }
+)
+
  useEffect(() => {
   try {
     localStorage.setItem(
@@ -419,6 +434,7 @@ const [colindancias, setColindancias] = useState(
   cierreObservado,
   puntos,
   colindancias,
+  puntosPI,
 })
 
     )
@@ -432,7 +448,8 @@ const [colindancias, setColindancias] = useState(
   rumbosDistancias,
   cierreObservado,
   puntos,
-   colindancias
+    colindancias,
+     puntosPI, 
 ])
 const coordenadasCalculadas = calcularCoordenadasDesdeRumbos()
 const puntosActivos =
@@ -462,6 +479,16 @@ const actualizarColindancia = (desde, hasta, valor) => {
     [clave]: valor,
   }))
 }
+const actualizarPI = (pi, campo, valor) => {
+  setPuntosPI((anteriores) => ({
+    ...anteriores,
+    [pi]: {
+      ...anteriores[pi],
+      [campo]: valor,
+    },
+  }))
+}
+
   const agregarPunto = () => {
     const nuevoId =
       puntos.length === 0 ? 1 : Math.max(...puntos.map((p) => p.id)) + 1
@@ -601,7 +628,24 @@ const perimetroAjustado =
         return total + (calcularDistancia(punto, siguiente) || 0)
       }, 0)
     : perimetro
+const datosPIValidos =
+  puntosPI.pi1.norte !== '' &&
+  puntosPI.pi1.este !== '' &&
+  puntosPI.pi2.norte !== '' &&
+  puntosPI.pi2.este !== ''
 
+const tramoPI = datosPIValidos
+  ? {
+      distancia: calcularDistancia(
+        puntosPI.pi1,
+        puntosPI.pi2
+      ),
+      rumbo: calcularRumbo(
+        puntosPI.pi1,
+        puntosPI.pi2
+      ),
+    }
+  : null
   return (
     <div className="nuevo-plano">
       <div className="nuevo-header">
@@ -1119,6 +1163,106 @@ const perimetroAjustado =
           </button>
         </section>
 )}
+<section className="form-seccion">
+  <div className="form-seccion-titulo">
+    <span>PI</span>
+
+    <div>
+      <h3>Puntos de Interés (PI)</h3>
+      <p>
+        Coordenadas de PI-1 y PI-2 para el control y referencia del levantamiento.
+      </p>
+    </div>
+  </div>
+
+  <div className="tabla-scroll">
+    <table className="tabla-puntos">
+      <thead>
+        <tr>
+          <th>Punto</th>
+          <th>Norte (N)</th>
+          <th>Este (E)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td><strong>PI-1</strong></td>
+
+          <td>
+            <input
+              type="number"
+              step="0.001"
+              value={puntosPI.pi1.norte}
+              onChange={(e) =>
+                actualizarPI('pi1', 'norte', e.target.value)
+              }
+              placeholder="0.000"
+            />
+          </td>
+
+          <td>
+            <input
+              type="number"
+              step="0.001"
+              value={puntosPI.pi1.este}
+              onChange={(e) =>
+                actualizarPI('pi1', 'este', e.target.value)
+              }
+              placeholder="0.000"
+            />
+          </td>
+        </tr>
+
+        <tr>
+          <td><strong>PI-2</strong></td>
+
+          <td>
+            <input
+              type="number"
+              step="0.001"
+              value={puntosPI.pi2.norte}
+              onChange={(e) =>
+                actualizarPI('pi2', 'norte', e.target.value)
+              }
+              placeholder="0.000"
+            />
+          </td>
+
+          <td>
+            <input
+              type="number"
+              step="0.001"
+              value={puntosPI.pi2.este}
+              onChange={(e) =>
+                actualizarPI('pi2', 'este', e.target.value)
+              }
+              placeholder="0.000"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {tramoPI && (
+  <div className="resumen-calculos">
+    <div>
+      <span>TRAMO</span>
+      <strong>PI-1 → PI-2</strong>
+    </div>
+
+    <div>
+      <span>DISTANCIA</span>
+      <strong>{tramoPI.distancia.toFixed(2)} m</strong>
+    </div>
+
+    <div>
+      <span>RUMBO</span>
+      <strong>{tramoPI.rumbo}</strong>
+    </div>
+  </div>
+)}
+</section>
         <section className="form-seccion">
           <div className="form-seccion-titulo">
             <span>02</span>
@@ -1314,6 +1458,7 @@ const perimetroAjustado =
                     </td>
 
                     <td>{segmento.rumbo}</td>
+
                     <td>
   <input
     type="text"
@@ -1356,6 +1501,8 @@ const perimetroAjustado =
   puntos: puntosActivos,
   segmentos,
   colindancias,
+  puntosPI,
+tramoPI,
  perimetro,
 perimetroAjustado,
 area,

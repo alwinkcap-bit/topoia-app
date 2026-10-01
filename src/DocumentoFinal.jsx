@@ -31,7 +31,20 @@ const restoLibre = areaFolioReal - areaSegregar
   const crearPoligono = () => {
     if (coordenadasFinales.length < 3) return []
 
-   const nortes = coordenadasFinales.map((p) => Number(p.norte))
+    const puntosPIValidos = Object.values(levantamiento?.puntosPI || {}).filter(
+      (p) =>
+        p.norte !== '' &&
+        p.este !== '' &&
+        Number.isFinite(Number(p.norte)) &&
+        Number.isFinite(Number(p.este))
+    )
+
+    const puntosParaEscala = [
+      ...coordenadasFinales,
+      ...puntosPIValidos,
+    ]
+
+const nortes = coordenadasFinales.map((p) => Number(p.norte))
 const estes = coordenadasFinales.map((p) => Number(p.este))
 
     const minN = Math.min(...nortes)
@@ -673,6 +686,67 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     </table>
   </div>
 </section>
+{levantamiento?.puntosPI && (
+  <section className="form-seccion">
+    <div className="form-seccion-titulo">
+      <span>PI</span>
+
+      <div>
+        <h3>Puntos de Interés</h3>
+        <p>
+          Coordenadas y relación geométrica entre PI-1 y PI-2.
+        </p>
+      </div>
+    </div>
+
+    <div className="tabla-scroll">
+      <table className="tabla-puntos">
+        <thead>
+          <tr>
+            <th>Punto</th>
+            <th>Norte (N)</th>
+            <th>Este (E)</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td>PI-1</td>
+            <td>{levantamiento.puntosPI.pi1?.norte || '—'}</td>
+            <td>{levantamiento.puntosPI.pi1?.este || '—'}</td>
+          </tr>
+
+          <tr>
+            <td>PI-2</td>
+            <td>{levantamiento.puntosPI.pi2?.norte || '—'}</td>
+            <td>{levantamiento.puntosPI.pi2?.este || '—'}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {levantamiento?.tramoPI && (
+      <div className="resumen-calculos">
+        <div>
+          <span>TRAMO</span>
+          <strong>PI-1 → PI-2</strong>
+        </div>
+
+        <div>
+          <span>DISTANCIA</span>
+          <strong>
+            {Number(levantamiento.tramoPI.distancia).toFixed(2)} m
+          </strong>
+        </div>
+
+        <div>
+          <span>RUMBO</span>
+          <strong>{levantamiento.tramoPI.rumbo}</strong>
+        </div>
+      </div>
+    )}
+  </section>
+)}
 <div className="form-acciones no-imprimir">
   <button
     type="button"
@@ -704,3 +778,5 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
 }
 
 export default DocumentoFinal
+
+
