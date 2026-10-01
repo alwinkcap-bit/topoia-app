@@ -427,6 +427,17 @@ const [puntosPI, setPuntosPI] = useState(
   }
 )
 
+const [detalleAmarre, setDetalleAmarre] = useState(
+  datosGuardados?.detalleAmarre || {
+    tipoReferencia: '',
+    nombreReferencia: '',
+    norte: '',
+    este: '',
+    puntoEnlace: '',
+    observaciones: '',
+  }
+)
+
  useEffect(() => {
   try {
     localStorage.setItem(
@@ -440,6 +451,7 @@ const [puntosPI, setPuntosPI] = useState(
   puntos,
   colindancias,
   puntosPI,
+  detalleAmarre,
 })
 
     )
@@ -454,7 +466,8 @@ const [puntosPI, setPuntosPI] = useState(
   cierreObservado,
   puntos,
     colindancias,
-     puntosPI, 
+     puntosPI,
+     detalleAmarre,
 ])
 const coordenadasCalculadas = calcularCoordenadasDesdeRumbos()
 const puntosActivos =
@@ -491,6 +504,13 @@ const actualizarPI = (pi, campo, valor) => {
       ...anteriores[pi],
       [campo]: valor,
     },
+  }))
+}
+
+const actualizarDetalleAmarre = (campo, valor) => {
+  setDetalleAmarre((anterior) => ({
+    ...anterior,
+    [campo]: valor,
   }))
 }
 
@@ -633,6 +653,35 @@ const perimetroAjustado =
         return total + (calcularDistancia(punto, siguiente) || 0)
       }, 0)
     : perimetro
+const puntosFinalesLevantamiento =
+  metodoEntrada === 'rumbos' &&
+  tipoLevantamiento === 'cerrado' &&
+  coordenadasFinalesAjustadas.length > 0
+    ? coordenadasFinalesAjustadas
+    : puntosActivos
+
+const puntoEnlaceAmarre = puntosFinalesLevantamiento.find(
+  (punto) => punto.nombre === detalleAmarre.puntoEnlace
+)
+
+const datosAmarreValidos =
+  detalleAmarre.norte !== '' &&
+  detalleAmarre.este !== '' &&
+  puntoEnlaceAmarre
+
+const tramoAmarre = datosAmarreValidos
+  ? {
+      distancia: calcularDistancia(
+        detalleAmarre,
+        puntoEnlaceAmarre
+      ),
+      rumbo: calcularRumbo(
+        detalleAmarre,
+        puntoEnlaceAmarre
+      ),
+    }
+  : null
+
 const datosPIValidos =
   puntosPI.pi1.norte !== '' &&
   puntosPI.pi1.este !== '' &&
@@ -1268,6 +1317,122 @@ const tramoPI = datosPIValidos
   </div>
 )}
 </section>
+
+<section className="form-seccion">
+  <div className="form-seccion-titulo">
+    <span>DA</span>
+
+    <div>
+      <h3>Detalle de Amarre</h3>
+      <p>
+        Referencia utilizada para relacionar el levantamiento con un punto fijo.
+      </p>
+    </div>
+  </div>
+
+  <div className="form-grid">
+    <label>
+      Tipo de referencia
+      <input
+        type="text"
+        value={detalleAmarre.tipoReferencia}
+        onChange={(e) =>
+          actualizarDetalleAmarre('tipoReferencia', e.target.value)
+        }
+        placeholder="Ej. monumento, edificio, punto permanente"
+      />
+    </label>
+
+    <label>
+      Nombre de la referencia
+      <input
+        type="text"
+        value={detalleAmarre.nombreReferencia}
+        onChange={(e) =>
+          actualizarDetalleAmarre('nombreReferencia', e.target.value)
+        }
+        placeholder="Nombre o identificación"
+      />
+    </label>
+
+    <label>
+      Norte (N)
+      <input
+        type="number"
+        step="0.001"
+        value={detalleAmarre.norte}
+        onChange={(e) =>
+          actualizarDetalleAmarre('norte', e.target.value)
+        }
+        placeholder="0.000"
+      />
+    </label>
+
+    <label>
+      Este (E)
+      <input
+        type="number"
+        step="0.001"
+        value={detalleAmarre.este}
+        onChange={(e) =>
+          actualizarDetalleAmarre('este', e.target.value)
+        }
+        placeholder="0.000"
+      />
+    </label>
+
+    <label>
+      Punto de enlace
+      <select
+        value={detalleAmarre.puntoEnlace}
+        onChange={(e) =>
+          actualizarDetalleAmarre('puntoEnlace', e.target.value)
+        }
+      >
+        <option value="">Seleccione un punto</option>
+        {puntosFinalesLevantamiento.map((punto) => (
+          <option key={punto.nombre} value={punto.nombre}>
+            {punto.nombre}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    <label>
+      Observaciones
+      <input
+        type="text"
+        value={detalleAmarre.observaciones}
+        onChange={(e) =>
+          actualizarDetalleAmarre('observaciones', e.target.value)
+        }
+        placeholder="Información adicional"
+      />
+    </label>
+  </div>
+
+  {tramoAmarre && (
+    <div className="resumen-calculos">
+      <div>
+        <span>TRAMO DE AMARRE</span>
+        <strong>
+          REFERENCIA → {detalleAmarre.puntoEnlace}
+        </strong>
+      </div>
+
+      <div>
+        <span>DISTANCIA</span>
+        <strong>{tramoAmarre.distancia.toFixed(2)} m</strong>
+      </div>
+
+      <div>
+        <span>RUMBO</span>
+        <strong>{tramoAmarre.rumbo}</strong>
+      </div>
+    </div>
+  )}
+</section>
+
         <section className="form-seccion">
           <div className="form-seccion-titulo">
             <span>02</span>
