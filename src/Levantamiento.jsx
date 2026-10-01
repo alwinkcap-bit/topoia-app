@@ -412,6 +412,23 @@ const [puntos, setPuntos] = useState(
 const [colindancias, setColindancias] = useState(
   datosGuardados?.colindancias || {}
 )
+
+const [vialidad, setVialidad] = useState(() => {
+  const guardada = datosGuardados?.vialidad
+
+  // Formato nuevo: vialidad organizada por tramo.
+  if (
+    guardada &&
+    !('nombreVia' in guardada) &&
+    !('anchoVia' in guardada) &&
+    !('tipoVia' in guardada) &&
+    !('observaciones' in guardada)
+  ) {
+    return guardada
+  }
+
+  return {}
+})
 const [puntosPI, setPuntosPI] = useState(
   datosGuardados?.puntosPI || {
     pi1: {
@@ -450,6 +467,7 @@ const [detalleAmarre, setDetalleAmarre] = useState(
   cierreObservado,
   puntos,
   colindancias,
+  vialidad,
   puntosPI,
   detalleAmarre,
 })
@@ -466,6 +484,7 @@ const [detalleAmarre, setDetalleAmarre] = useState(
   cierreObservado,
   puntos,
     colindancias,
+    vialidad,
      puntosPI,
      detalleAmarre,
 ])
@@ -495,6 +514,23 @@ const actualizarColindancia = (desde, hasta, valor) => {
   setColindancias((anteriores) => ({
     ...anteriores,
     [clave]: valor,
+  }))
+}
+
+const actualizarVialidad = (desde, hasta, campo, valor) => {
+  const clave = `${desde}-${hasta}`
+
+  setVialidad((anteriores) => ({
+    ...anteriores,
+    [clave]: {
+      ...(anteriores[clave] || {
+        nombreVia: '',
+        anchoVia: '',
+        tipoVia: '',
+        observaciones: '',
+      }),
+      [campo]: valor,
+    },
   }))
 }
 const actualizarPI = (pi, campo, valor) => {
@@ -1431,6 +1467,116 @@ const tramoPI = datosPIValidos
       </div>
     </div>
   )}
+</section>
+
+<section className="form-seccion">
+  <div className="form-seccion-titulo">
+    <span>VA</span>
+
+    <div>
+      <h3>Vialidad / Acceso</h3>
+      <p>
+        Datos de las vías asociadas a cada tramo, suministrados por el técnico.
+      </p>
+    </div>
+  </div>
+
+  <div className="tabla-scroll">
+    <table className="tabla-puntos">
+      <thead>
+        <tr>
+          <th>Tramo</th>
+          <th>Nombre de la vía</th>
+          <th>Ancho (m)</th>
+          <th>Tipo</th>
+          <th>Observaciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {segmentos.map((segmento, index) => {
+          const clave = `${segmento.desde}-${segmento.hasta}`
+          const via = vialidad[clave] || {}
+
+          return (
+            <tr key={index}>
+              <td>
+                <strong>
+                  {segmento.desde} – {segmento.hasta}
+                </strong>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  value={via.nombreVia || ''}
+                  onChange={(e) =>
+                    actualizarVialidad(
+                      segmento.desde,
+                      segmento.hasta,
+                      'nombreVia',
+                      e.target.value
+                    )
+                  }
+                  placeholder="Ej. Calle Principal"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={via.anchoVia || ''}
+                  onChange={(e) =>
+                    actualizarVialidad(
+                      segmento.desde,
+                      segmento.hasta,
+                      'anchoVia',
+                      e.target.value
+                    )
+                  }
+                  placeholder="0.00"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  value={via.tipoVia || ''}
+                  onChange={(e) =>
+                    actualizarVialidad(
+                      segmento.desde,
+                      segmento.hasta,
+                      'tipoVia',
+                      e.target.value
+                    )
+                  }
+                  placeholder="Calle / avenida / camino"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  value={via.observaciones || ''}
+                  onChange={(e) =>
+                    actualizarVialidad(
+                      segmento.desde,
+                      segmento.hasta,
+                      'observaciones',
+                      e.target.value
+                    )
+                  }
+                  placeholder="Información adicional"
+                />
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  </div>
 </section>
 
         <section className="form-seccion">
