@@ -1,5 +1,70 @@
 import { useEffect, useState } from 'react'
 
+const ubicacionesHerrera = {
+  'Chitré': {
+    'Chitré': '60101',
+    'Las Arenas': '60102',
+    'Monagrillo': '60103',
+    'Llano Bonito': '60104',
+    'San Juan Bautista': '60105',
+  },
+  'Las Minas': {
+    'Las Minas': '60201',
+    'Chepo': '60202',
+    'El Chumical': '60203',
+    'El Toro': '60204',
+    'Leones': '60205',
+    'Quebrada del Rosario': '60206',
+  },
+  'Los Pozos': {
+    'Los Pozos': '60301',
+    'El Capurí': '60302',
+    'El Calabacito': '60303',
+    'El Cedro': '60304',
+    'La Arena': '60305',
+    'La Pitaloza': '60306',
+    'Los Cerritos': '60307',
+    'Cerro Paja': '60308',
+    'Las Llanas': '60309',
+  },
+  'Ocú': {
+    'Ocú': '60401',
+    'Cerro Largo': '60402',
+    'Los Llanos': '60403',
+    'Llano Grande': '60404',
+    'Peña Chatas': '60405',
+    'Tijera': '60406',
+    'Menchaca': '60407',
+    'Entradero del Castillo': '60408',
+  },
+  'Parita': {
+    'Parita': '60501',
+    'Cabuya': '60502',
+    'Los Castillos': '60503',
+    'Llano de la Cruz': '60504',
+    'París': '60505',
+    'Portobelillo': '60506',
+    'Rincón Hondo': '60507',
+  },
+  'Pesé': {
+    'Pesé': '60601',
+    'Las Cabras': '60602',
+    'El Pájaro': '60603',
+    'El Barrero': '60604',
+    'El Pedregoso': '60605',
+    'El Ciruelo': '60606',
+    'Sabana Grande': '60607',
+    'Rincón Hondo': '60608',
+  },
+  'Santa María': {
+    'Santa María': '60701',
+    'Chupampa': '60702',
+    'El Rincón': '60703',
+    'El Limón': '60704',
+    'Los Canelos': '60705',
+  },
+}
+
 function NuevoPlano({ volver, continuar }) {
   const datosGuardados = (() => {
     try {
@@ -10,12 +75,13 @@ function NuevoPlano({ volver, continuar }) {
     }
   })()
 
-  const [datos, setDatos] = useState(datosGuardados || {
+  const [datos, setDatos] = useState({
     nombreProyecto: '',
     tipoPlano: '',
     provincia: '',
     distrito: '',
     corregimiento: '',
+    codigoUbicacion: '',
     localidad: '',
     propietario: '',
     cedulaPropietario: '',
@@ -29,6 +95,7 @@ function NuevoPlano({ volver, continuar }) {
     profesional: '',
     idoneidad: '',
     fechaLevantamiento: '',
+    ...(datosGuardados || {}),
   })
 
   useEffect(() => {
@@ -45,10 +112,32 @@ function NuevoPlano({ volver, continuar }) {
   const actualizar = (e) => {
     const { name, value } = e.target
 
-    setDatos((anterior) => ({
-      ...anterior,
-      [name]: value,
-    }))
+    setDatos((anterior) => {
+      if (name === 'distrito') {
+        return {
+          ...anterior,
+          provincia: 'Herrera',
+          distrito: value,
+          corregimiento: '',
+          codigoUbicacion: '',
+        }
+      }
+
+      if (name === 'corregimiento') {
+        return {
+          ...anterior,
+          provincia: 'Herrera',
+          corregimiento: value,
+          codigoUbicacion:
+            ubicacionesHerrera[anterior.distrito]?.[value] || '',
+        }
+      }
+
+      return {
+        ...anterior,
+        [name]: value,
+      }
+    })
   }
 
  const enviarFormulario = (e) => {
@@ -170,32 +259,56 @@ function NuevoPlano({ volver, continuar }) {
               Provincia
               <input
                 name="provincia"
-                value={datos.provincia}
-                onChange={actualizar}
-                placeholder="Provincia"
-                required
+                value="Herrera"
+                readOnly
               />
             </label>
 
             <label className="campo">
               Distrito
-              <input
+              <select
                 name="distrito"
                 value={datos.distrito}
                 onChange={actualizar}
-                placeholder="Distrito"
                 required
-              />
+              >
+                <option value="">Seleccione un distrito</option>
+                {Object.keys(ubicacionesHerrera).map((distrito) => (
+                  <option key={distrito} value={distrito}>
+                    {distrito}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="campo">
               Corregimiento
-              <input
+              <select
                 name="corregimiento"
                 value={datos.corregimiento}
                 onChange={actualizar}
-                placeholder="Corregimiento"
+                disabled={!datos.distrito}
                 required
+              >
+                <option value="">Seleccione un corregimiento</option>
+                {datos.distrito &&
+                  Object.keys(
+                    ubicacionesHerrera[datos.distrito] || {}
+                  ).map((corregimiento) => (
+                    <option key={corregimiento} value={corregimiento}>
+                      {corregimiento}
+                    </option>
+                  ))}
+              </select>
+            </label>
+
+            <label className="campo">
+              Código de ubicación
+              <input
+                name="codigoUbicacion"
+                value={datos.codigoUbicacion}
+                readOnly
+                placeholder="Automático"
               />
             </label>
 
