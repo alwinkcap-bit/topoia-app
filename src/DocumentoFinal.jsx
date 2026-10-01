@@ -70,14 +70,21 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     const offsetX = (ancho - anchoReal) / 2
     const offsetY = (alto - altoReal) / 2
 
-    return coordenadasFinales.map((p) => ({
+    const transformarPunto = (p) => ({
       ...p,
       x: offsetX + (Number(p.este) - minE) * escala,
       y: alto - (offsetY + (Number(p.norte) - minN) * escala),
-    }))
+    })
+
+    return {
+      puntos: coordenadasFinales.map(transformarPunto),
+      puntosPI: puntosPIValidos.map(transformarPunto),
+    }
   }
 
-  const puntosGrafico = crearPoligono()
+  const datosGrafico = crearPoligono()
+  const puntosGrafico = datosGrafico.puntos || []
+  const puntosPIGrafico = datosGrafico.puntosPI || []
 
   const polygonPoints = puntosGrafico
     .map((p) => `${p.x},${p.y}`)
@@ -610,6 +617,57 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     )}
   </div>
 </section>
+
+{levantamiento?.tramoPI && (
+  <section className="form-seccion">
+    <div className="form-seccion-titulo">
+      <span>PI</span>
+
+      <div>
+        <h3>Detalle PI-1 → PI-2</h3>
+        <p>Representación independiente de los puntos de interés.</p>
+      </div>
+    </div>
+
+    <div className="plano-preview">
+      <svg
+        viewBox="0 0 700 180"
+        className="poligono-svg"
+        role="img"
+        aria-label="Detalle gráfico PI-1 a PI-2"
+      >
+        <line
+          x1="120"
+          y1="90"
+          x2="580"
+          y2="90"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+
+        <circle cx="120" cy="90" r="6" className="vertice" />
+        <circle cx="580" cy="90" r="6" className="vertice" />
+
+        <text x="120" y="65" textAnchor="middle" className="vertice-texto">
+          PI-1
+        </text>
+
+        <text x="580" y="65" textAnchor="middle" className="vertice-texto">
+          PI-2
+        </text>
+
+        <text x="350" y="75" textAnchor="middle" className="vertice-texto">
+          {Number(levantamiento.tramoPI.distancia).toFixed(2)} m
+        </text>
+
+        <text x="350" y="120" textAnchor="middle" className="vertice-texto">
+          {levantamiento.tramoPI.rumbo}
+        </text>
+      </svg>
+    </div>
+  </section>
+)}
+
 <section className="form-seccion">
   <div className="form-seccion-titulo">
     <span>04</span>
