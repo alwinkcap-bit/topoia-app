@@ -579,13 +579,14 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
               className="vertice"
             />
 
-            <text
-              x={p.x + 11}
-              y={p.y - 11}
-              className="vertice-texto"
-            >
-              {p.nombre}
-            </text>
+          <text
+  x={p.x + (p.x >= 350 ? 12 : -12)}
+  y={p.y + (p.y >= 220 ? 20 : -14)}
+  textAnchor={p.x >= 350 ? 'start' : 'end'}
+  className="vertice-texto"
+>
+  {p.nombre}
+</text>
           </g>
         ))}
       </svg>

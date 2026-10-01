@@ -432,6 +432,7 @@ const [colindancias, setColindancias] = useState(
   rumbosDistancias,
   cierreObservado,
   puntos,
+   colindancias
 ])
 const coordenadasCalculadas = calcularCoordenadasDesdeRumbos()
 const puntosActivos =
@@ -453,7 +454,14 @@ const puntosActivos =
       )
     )
   }
+const actualizarColindancia = (desde, hasta, valor) => {
+  const clave = `${desde}-${hasta}`
 
+  setColindancias((anteriores) => ({
+    ...anteriores,
+    [clave]: valor,
+  }))
+}
   const agregarPunto = () => {
     const nuevoId =
       puntos.length === 0 ? 1 : Math.max(...puntos.map((p) => p.id)) + 1
@@ -1288,6 +1296,7 @@ const perimetroAjustado =
                   <th>Estación</th>
                   <th>Distancia</th>
                   <th>Rumbo</th>
+                   <th>Colindante</th>
                 </tr>
               </thead>
 
@@ -1305,6 +1314,21 @@ const perimetroAjustado =
                     </td>
 
                     <td>{segmento.rumbo}</td>
+                    <td>
+  <input
+    type="text"
+    value={colindancias[`${segmento.desde}-${segmento.hasta}`] || ''}
+    onChange={(e) =>
+      actualizarColindancia(
+        segmento.desde,
+        segmento.hasta,
+        e.target.value
+      )
+    }
+    placeholder="Folio Real / propietario / calle"
+  />
+</td>
+ 
                   </tr>
                 ))}
               </tbody>
@@ -1331,6 +1355,7 @@ const perimetroAjustado =
   tipoLevantamiento,
   puntos: puntosActivos,
   segmentos,
+  colindancias,
  perimetro,
 perimetroAjustado,
 area,
