@@ -48,6 +48,11 @@ function calcularRumbo(p1, p2) {
 
   if (deltaN === 0 && deltaE === 0) return '—'
 
+  if (deltaE === 0 && deltaN > 0) return 'N'
+  if (deltaE === 0 && deltaN < 0) return 'S'
+  if (deltaN === 0 && deltaE > 0) return 'E'
+  if (deltaN === 0 && deltaE < 0) return 'W'
+
   const angulo =
     Math.atan2(Math.abs(deltaE), Math.abs(deltaN)) * (180 / Math.PI)
 

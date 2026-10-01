@@ -687,11 +687,21 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
           PI-2
         </text>
 
-        <text x="350" y="75" textAnchor="middle" className="vertice-texto">
+        <text
+          x={Math.abs(detallePI.pi2.x - detallePI.pi1.x) < 20 ? 385 : 350}
+          y={Math.abs(detallePI.pi2.x - detallePI.pi1.x) < 20 ? 80 : 75}
+          textAnchor="middle"
+          className="vertice-texto"
+        >
           {Number(levantamiento.tramoPI.distancia).toFixed(2)} m
         </text>
 
-        <text x="350" y="120" textAnchor="middle" className="vertice-texto">
+        <text
+          x={Math.abs(detallePI.pi2.x - detallePI.pi1.x) < 20 ? 405 : 350}
+          y={Math.abs(detallePI.pi2.x - detallePI.pi1.x) < 20 ? 110 : 120}
+          textAnchor="middle"
+          className="vertice-texto"
+        >
           {levantamiento.tramoPI.rumbo}
         </text>
       </svg>
