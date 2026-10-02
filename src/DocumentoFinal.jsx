@@ -1,3 +1,8 @@
+import {
+  calcularCentroPuntos,
+  utm17NAGeograficas,
+} from './geografia'
+
 function DocumentoFinal({
   datosProyecto,
   levantamiento,
@@ -27,6 +32,15 @@ const restoLibre = areaFolioReal - areaSegregar
           (punto) => punto.nombre !== 'M1 CIERRE'
         )
       : puntosValidos
+
+  const centroPredio = calcularCentroPuntos(coordenadasFinales)
+
+  const ubicacionGeografica = centroPredio
+    ? utm17NAGeograficas(
+        centroPredio.este,
+        centroPredio.norte
+      )
+    : null
 
   const crearPoligono = () => {
     if (coordenadasFinales.length < 3) return []
@@ -882,6 +896,24 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     <div>
       <span>LUGAR / LOCALIDAD</span>
       <strong>{datosProyecto?.localidad || '—'}</strong>
+    </div>
+
+    <div>
+      <span>LATITUD CENTRO DEL PREDIO</span>
+      <strong>
+        {ubicacionGeografica
+          ? ubicacionGeografica.latitud.toFixed(6)
+          : '—'}
+      </strong>
+    </div>
+
+    <div>
+      <span>LONGITUD CENTRO DEL PREDIO</span>
+      <strong>
+        {ubicacionGeografica
+          ? ubicacionGeografica.longitud.toFixed(6)
+          : '—'}
+      </strong>
     </div>
   </div>
 </section>
