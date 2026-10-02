@@ -2,6 +2,7 @@ import {
   calcularCentroPuntos,
   utm17NAGeograficas,
 } from './geografia'
+import LocalizacionRegional from './LocalizacionRegional'
 
 function DocumentoFinal({
   datosProyecto,
@@ -872,50 +873,11 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     </div>
   </div>
 
-  <div className="datos-preview">
-    <div>
-      <span>PROVINCIA</span>
-      <strong>{datosProyecto?.provincia || 'Herrera'}</strong>
-    </div>
-
-    <div>
-      <span>DISTRITO</span>
-      <strong>{datosProyecto?.distrito || '—'}</strong>
-    </div>
-
-    <div>
-      <span>CORREGIMIENTO</span>
-      <strong>{datosProyecto?.corregimiento || '—'}</strong>
-    </div>
-
-    <div>
-      <span>CÓDIGO DE UBICACIÓN</span>
-      <strong>{datosProyecto?.codigoUbicacion || '—'}</strong>
-    </div>
-
-    <div>
-      <span>LUGAR / LOCALIDAD</span>
-      <strong>{datosProyecto?.localidad || '—'}</strong>
-    </div>
-
-    <div>
-      <span>LATITUD CENTRO DEL PREDIO</span>
-      <strong>
-        {ubicacionGeografica
-          ? ubicacionGeografica.latitud.toFixed(6)
-          : '—'}
-      </strong>
-    </div>
-
-    <div>
-      <span>LONGITUD CENTRO DEL PREDIO</span>
-      <strong>
-        {ubicacionGeografica
-          ? ubicacionGeografica.longitud.toFixed(6)
-          : '—'}
-      </strong>
-    </div>
-  </div>
+  <LocalizacionRegional
+    ubicacionGeografica={ubicacionGeografica}
+    datosProyecto={datosProyecto}
+    coordenadasFinales={coordenadasFinales}
+  />
 </section>
 
 <section className="form-seccion">

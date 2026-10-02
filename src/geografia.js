@@ -51,3 +51,42 @@ export function calcularCentroPuntos(puntos = []) {
     este: suma.este / validos.length,
   }
 }
+
+export function geograficaAWebMercator(latitud, longitud) {
+  const lat = Number(latitud)
+  const lon = Number(longitud)
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+    return null
+  }
+
+  const [x, y] = proj4(
+    'EPSG:4326',
+    'EPSG:3857',
+    [lon, lat]
+  )
+
+  return { x, y }
+}
+
+export function crearBBoxRegional(
+  latitud,
+  longitud,
+  radioMetros = 1000
+) {
+  const centro = geograficaAWebMercator(
+    latitud,
+    longitud
+  )
+
+  if (!centro) {
+    return null
+  }
+
+  return {
+    xmin: centro.x - radioMetros,
+    ymin: centro.y - radioMetros,
+    xmax: centro.x + radioMetros,
+    ymax: centro.y + radioMetros,
+  }
+}
