@@ -170,3 +170,37 @@ with salida.open("w", encoding="utf-8") as f:
 print("JSON FINAL ACTUALIZADO")
 print("GEOMETRIAS:", len(elementos))
 print("TEXTOS:", len(textos))
+
+# Actualizar indice general de sectores
+sectores_indice = []
+
+for archivo_sector in sorted(salida.parent.glob("sector_*.json")):
+    try:
+        datos_sector = json.loads(
+            archivo_sector.read_text(encoding="utf-8")
+        )
+
+        sectores_indice.append({
+            "archivo": archivo_sector.name,
+            "este": datos_sector["centro"]["este"],
+            "norte": datos_sector["centro"]["norte"],
+            "radio": datos_sector["radio"],
+            "geometrias": len(datos_sector.get("elementos", [])),
+            "textos": len(datos_sector.get("textos", [])),
+        })
+    except Exception as error:
+        print("No se pudo indexar:", archivo_sector.name, error)
+
+indice = salida.parent / "indice_sectores.json"
+
+indice.write_text(
+    json.dumps(
+        {"sectores": sectores_indice},
+        ensure_ascii=False,
+        indent=2
+    ),
+    encoding="utf-8"
+)
+
+print("INDICE ACTUALIZADO:", indice)
+print("SECTORES DISPONIBLES:", len(sectores_indice))
