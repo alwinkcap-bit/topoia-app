@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import './App.css'
 import NuevoPlano from './NuevoPlano'
 import Levantamiento from './Levantamiento'
@@ -8,6 +8,89 @@ import DocumentoFinal from './DocumentoFinal'
 import VistaCAD from './VistaCAD'
 
 function App() {
+  const selectorProyectoRef = useRef(null)
+
+  const abrirProyecto = (evento) => {
+    const archivo = evento.target.files?.[0]
+    if (!archivo) return
+
+    const lector = new FileReader()
+
+    lector.onload = () => {
+      try {
+        const proyecto = JSON.parse(lector.result)
+
+        if (
+          proyecto?.aplicacion !== 'TopoIA' ||
+          !proyecto?.datosProyecto ||
+          !proyecto?.datosLevantamiento
+        ) {
+          alert('El archivo seleccionado no es un proyecto válido de TopoIA.')
+          return
+        }
+
+        localStorage.setItem(
+          'topoia-nuevo-plano',
+          JSON.stringify(proyecto.datosProyecto)
+        )
+
+        localStorage.setItem(
+          'topoia-levantamiento',
+          JSON.stringify(proyecto.datosLevantamiento)
+        )
+
+        setDatosProyecto(proyecto.datosProyecto)
+        setDatosLevantamiento(proyecto.datosLevantamiento)
+        setPantalla('inicio')
+
+        alert('Proyecto TopoIA restaurado correctamente.')
+      } catch (error) {
+        console.error('Error al abrir proyecto:', error)
+        alert('No se pudo abrir el proyecto.')
+      } finally {
+        evento.target.value = ''
+      }
+    }
+
+    lector.readAsText(archivo)
+  }
+
+  const guardarProyecto = () => {
+    try {
+      const proyecto = {
+        version: 1,
+        aplicacion: 'TopoIA',
+        fechaGuardado: new Date().toISOString(),
+        datosProyecto,
+        datosLevantamiento,
+      }
+
+      const contenido = JSON.stringify(proyecto, null, 2)
+      const blob = new Blob([contenido], {
+        type: 'application/json',
+      })
+
+      const url = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+
+      const nombreBase =
+        datosProyecto?.nombreProyecto
+          ?.trim()
+          .replace(/[^a-zA-Z0-9_-]+/g, '_') ||
+        'proyecto-topoia'
+
+      enlace.href = url
+      enlace.download = `${nombreBase}.topoia.json`
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error al guardar proyecto:', error)
+    }
+  }
+
     const [pantalla, setPantalla] = useState('inicio')
     const [datosProyecto, setDatosProyecto] = useState(() => {
   try {
@@ -152,6 +235,38 @@ if (pantalla === 'vista-cad') {
             <div>
               <h3>Mis Planos</h3>
               <p>Consultar proyectos guardados</p>
+            </div>
+            <span className="arrow">→</span>
+          </button>
+
+          <input
+            ref={selectorProyectoRef}
+            type="file"
+            accept=".json,.topoia.json"
+            onChange={abrirProyecto}
+            style={{ display: 'none' }}
+          />
+
+          <button
+            className="action-card"
+            onClick={() => selectorProyectoRef.current?.click()}
+          >
+            <div className="action-icon">↥</div>
+            <div>
+              <h3>Abrir Proyecto</h3>
+              <p>Restaurar un respaldo de TopoIA</p>
+            </div>
+            <span className="arrow">→</span>
+          </button>
+
+          <button
+            className="action-card"
+            onClick={guardarProyecto}
+          >
+            <div className="action-icon">↓</div>
+            <div>
+              <h3>Guardar Proyecto</h3>
+              <p>Descargar respaldo completo de TopoIA</p>
             </div>
             <span className="arrow">→</span>
           </button>
