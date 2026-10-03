@@ -127,7 +127,7 @@ for e in seleccionadas:
 
 print("ARCOS EXPORTADOS:", arcos_exportados)
 print("GEOMETRIAS EXPORTABLES:", len(elementos))
-salida = Path("cartografia/procesada/monagrillo_sector.json")
+salida = Path(f"cartografia/procesada/sector_{int(ESTE)}_{int(NORTE)}.json")
 
 datos_salida = {
     "centro": {"este": ESTE, "norte": NORTE},
