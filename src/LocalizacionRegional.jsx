@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   crearBBoxRegional,
   utm17NAGeograficas,
@@ -9,6 +10,23 @@ function LocalizacionRegional({
   datosProyecto,
   coordenadasFinales = [],
 }) {
+  const [cartografiaHerrera, setCartografiaHerrera] = useState(null)
+
+  useEffect(() => {
+    fetch('/cartografia/monagrillo_sector.json')
+      .then((respuesta) => respuesta.json())
+      .then((datos) => {
+        setCartografiaHerrera(datos)
+        console.log('Cartografia Herrera cargada:', {
+          geometrias: datos.elementos?.length || 0,
+          textos: datos.textos?.length || 0,
+        })
+      })
+      .catch((error) => {
+        console.error('Error cargando cartografia Herrera:', error)
+      })
+  }, [])
+
   if (!ubicacionGeografica) {
     return (
       <div className="localizacion-regional">
@@ -107,6 +125,55 @@ function LocalizacionRegional({
     .map((punto) => `${punto.x},${punto.y}`)
     .join(' ')
 
+  const convertirNEaMapa = (este, norte) => {
+    if (!cartografiaHerrera) return null
+
+    const { centro, radio } = cartografiaHerrera
+
+    const xmin = centro.este - radio
+    const xmax = centro.este + radio
+    const ymin = centro.norte - radio
+    const ymax = centro.norte + radio
+
+    return {
+      x: ((Number(este) - xmin) / (xmax - xmin)) * 900,
+      y: (1 - (Number(norte) - ymin) / (ymax - ymin)) * 700,
+    }
+  }
+
+  const predioVectorial = coordenadasFinales
+    .map((punto) =>
+      convertirNEaMapa(
+        Number(punto.este),
+        Number(punto.norte)
+      )
+    )
+    .filter(Boolean)
+
+  const puntosPredioVectorial = predioVectorial
+    .map((punto) => `${punto.x},${punto.y}`)
+    .join(' ')
+
+  const geometriaVectorial = cartografiaHerrera
+    ? cartografiaHerrera.elementos
+        .map((elemento, indice) => {
+          const puntos = (elemento.puntos || [])
+            .map(([este, norte]) =>
+              convertirNEaMapa(este, norte)
+            )
+            .filter(Boolean)
+
+          if (puntos.length < 2) return null
+
+          return {
+            ...elemento,
+            id: indice,
+            puntosMapa: puntos,
+          }
+        })
+        .filter(Boolean)
+    : []
+
   const urlMapa = bbox
     ? `https://sigigntg.anati.gob.pa/arcgisserver/rest/services/Mapa_Web_de_Poblados_2025_MIL1/MapServer/export?bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}&bboxSR=3857&imageSR=3857&size=900,700&dpi=96&format=png32&transparent=false&f=image`
     : null
@@ -138,6 +205,66 @@ function LocalizacionRegional({
           {latitud.toFixed(6)}, {longitud.toFixed(6)}
         </strong>
       </div>
+
+      {cartografiaHerrera && (
+        <div
+          style={{
+            marginTop: '12px',
+            border: '1px solid #999',
+            background: '#fff',
+          }}
+        >
+          <div
+            style={{
+              padding: '6px 8px',
+              fontSize: '12px',
+              fontWeight: 'bold',
+            }}
+          >
+            BASE CARTOGRÁFICA VECTORIAL — HERRERA
+          </div>
+
+          <svg
+            viewBox="0 0 900 700"
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              background: '#fff',
+            }}
+          >
+            {geometriaVectorial.map((elemento) => {
+              const puntos = elemento.puntosMapa
+                .map((punto) => `${punto.x},${punto.y}`)
+                .join(' ')
+
+              return (
+                <polyline
+                  key={`cartografia-${elemento.id}`}
+                  points={puntos}
+                  fill={
+                    elemento.cerrada
+                      ? 'rgba(220,220,220,0.15)'
+                      : 'none'
+                  }
+                  stroke="#777"
+                  strokeWidth="0.7"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )
+            })}
+            {puntosPredioVectorial && (
+              <polygon
+                points={puntosPredioVectorial}
+                fill="rgba(255, 215, 0, 0.55)"
+                stroke="#d40000"
+                strokeWidth="2"
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
+          </svg>
+        </div>
+      )}
 
       {urlMapa && (
         <div
