@@ -1,6 +1,7 @@
 import ezdxf
 import json
 import math
+import sys
 from pathlib import Path
 
 DXF = Path("cartografia/dxf/LOCALIZACION REGIONAL HE (1).dxf")
@@ -10,9 +11,9 @@ doc = ezdxf.readfile(DXF)
 msp = doc.modelspace()
 print(f"Entidades cargadas: {len(msp)}")
 
-ESTE = 563000.0
-NORTE = 883000.0
-RADIO = 1000.0
+ESTE = float(sys.argv[1]) if len(sys.argv) > 1 else 563000.0
+NORTE = float(sys.argv[2]) if len(sys.argv) > 2 else 883000.0
+RADIO = float(sys.argv[3]) if len(sys.argv) > 3 else 1000.0
 
 print(f"Centro: E={ESTE:.2f} N={NORTE:.2f}")
 print(f"Radio de extraccion: {RADIO:.0f} m")
