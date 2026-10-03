@@ -1,4 +1,6 @@
 import ezdxf
+import json
+import math
 from pathlib import Path
 
 DXF = Path("cartografia/dxf/LOCALIZACION REGIONAL HE (1).dxf")
@@ -51,3 +53,119 @@ capas_sector = Counter(e.dxf.layer for e in seleccionadas)
 print("CAPAS DEL SECTOR:")
 for capa, cantidad in capas_sector.most_common():
     print(cantidad, "|", capa)
+tipos_sector = Counter(e.dxftype() for e in seleccionadas)
+
+print("TIPOS DE ENTIDAD DEL SECTOR:")
+for tipo, cantidad in tipos_sector.most_common():
+    print(cantidad, "|", tipo)
+
+elementos = []
+
+for e in seleccionadas:
+    if e.dxftype() == "LINE":
+        elementos.append({
+            "tipo": "linea",
+            "capa": e.dxf.layer,
+            "puntos": [
+                [e.dxf.start.x, e.dxf.start.y],
+                [e.dxf.end.x, e.dxf.end.y],
+            ],
+        })
+
+    elif e.dxftype() == "LWPOLYLINE":
+        puntos = [
+            [p[0], p[1]]
+            for p in e.get_points()
+        ]
+
+        elementos.append({
+            "tipo": "polilinea",
+            "capa": e.dxf.layer,
+            "cerrada": bool(e.closed),
+            "puntos": puntos,
+        })
+
+print("LINEAS Y POLILINEAS EXPORTABLES:", len(elementos))
+
+arcos_exportados = 0
+
+for e in seleccionadas:
+    if e.dxftype() != "ARC":
+        continue
+
+    centro = e.dxf.center
+    radio = e.dxf.radius
+    inicio = e.dxf.start_angle
+    fin = e.dxf.end_angle
+
+    if fin < inicio:
+        fin += 360
+
+    amplitud = fin - inicio
+    pasos = max(8, math.ceil(amplitud / 5))
+
+    puntos = []
+
+    for i in range(pasos + 1):
+        angulo = math.radians(
+            inicio + amplitud * i / pasos
+        )
+
+        x = centro.x + radio * math.cos(angulo)
+        y = centro.y + radio * math.sin(angulo)
+
+        puntos.append([x, y])
+
+    elementos.append({
+        "tipo": "arco",
+        "capa": e.dxf.layer,
+        "puntos": puntos,
+    })
+
+    arcos_exportados += 1
+
+print("ARCOS EXPORTADOS:", arcos_exportados)
+print("GEOMETRIAS EXPORTABLES:", len(elementos))
+salida = Path("cartografia/procesada/monagrillo_sector.json")
+
+datos_salida = {
+    "centro": {"este": ESTE, "norte": NORTE},
+    "radio": RADIO,
+    "elementos": elementos,
+}
+
+with salida.open("w", encoding="utf-8") as f:
+    json.dump(datos_salida, f, ensure_ascii=False, separators=(",", ":"))
+
+print("ARCHIVO GENERADO:", salida)
+
+textos = []
+
+for e in seleccionadas:
+    if e.dxftype() not in ("TEXT", "MTEXT"):
+        continue
+
+    try:
+        contenido = e.plain_text().strip()
+        posicion = e.dxf.insert
+
+        if contenido:
+            textos.append({
+                "capa": e.dxf.layer,
+                "texto": contenido,
+                "este": posicion.x,
+                "norte": posicion.y,
+            })
+    except Exception:
+        continue
+
+print("TEXTOS EXPORTABLES:", len(textos))
+
+datos_salida["textos"] = textos
+
+with salida.open("w", encoding="utf-8") as f:
+    json.dump(datos_salida, f, ensure_ascii=False, separators=(",", ":"))
+
+print("JSON FINAL ACTUALIZADO")
+print("GEOMETRIAS:", len(elementos))
+print("TEXTOS:", len(textos))
