@@ -309,7 +309,9 @@ function LocalizacionRegional({
       <div>
         <span>Centro geográfico: </span>
         <strong>
-          {latitud.toFixed(6)}, {longitud.toFixed(6)}
+          {sistemaCoordenadas === 'utm'
+            ? `${latitud.toFixed(6)}, ${longitud.toFixed(6)}`
+            : 'No disponible — coordenadas locales'}
         </strong>
       </div>
 
@@ -373,7 +375,7 @@ function LocalizacionRegional({
         </div>
       )}
 
-      {urlMapa && (
+      {sistemaCoordenadas === 'utm' && urlMapa && (
         <div
           style={{
             marginTop: '12px',
