@@ -41,6 +41,11 @@ function LocalizacionRegional({
     const centroNorte =
       nortes.reduce((suma, valor) => suma + valor, 0) / nortes.length
 
+    const predioXmin = Math.min(...estes)
+    const predioXmax = Math.max(...estes)
+    const predioYmin = Math.min(...nortes)
+    const predioYmax = Math.max(...nortes)
+
     console.log('PUNTOS REALES RECIBIDOS POR LR:', coordenadasFinales)
     console.log('CENTRO REAL DEL PREDIO:', {
       este: centroEste,
@@ -61,6 +66,29 @@ function LocalizacionRegional({
         if (sectores.length === 0) {
           throw new Error('El indice no contiene sectores.')
         }
+
+        const sectoresIntersectados = sectores.filter((sector) => {
+          const esteSector = Number(sector.este)
+          const norteSector = Number(sector.norte)
+          const radioSector = Number(sector.radio)
+
+          const xmin = esteSector - radioSector
+          const xmax = esteSector + radioSector
+          const ymin = norteSector - radioSector
+          const ymax = norteSector + radioSector
+
+          return !(
+            predioXmax < xmin ||
+            predioXmin > xmax ||
+            predioYmax < ymin ||
+            predioYmin > ymax
+          )
+        })
+
+        console.log(
+          'SECTORES INTERSECTADOS POR EL PREDIO:',
+          sectoresIntersectados.map((sector) => sector.archivo)
+        )
 
         const sectorEncontrado = sectores.find((sector) => {
           const esteSector = Number(sector.este)
@@ -266,6 +294,37 @@ function LocalizacionRegional({
     .map((punto) => `${punto.x},${punto.y}`)
     .join(' ')
 
+  const vistaPredio = (() => {
+    if (predioVectorial.length === 0) {
+      return { x: 0, y: 0, lado: 800 }
+    }
+
+    const xs = predioVectorial.map((punto) => punto.x)
+    const ys = predioVectorial.map((punto) => punto.y)
+
+    const xmin = Math.min(...xs)
+    const xmax = Math.max(...xs)
+    const ymin = Math.min(...ys)
+    const ymax = Math.max(...ys)
+
+    const ancho = xmax - xmin
+    const alto = ymax - ymin
+
+    const centroX = (xmin + xmax) / 2
+    const centroY = (ymin + ymax) / 2
+
+    const lado = Math.min(
+      800,
+      Math.max(120, Math.max(ancho, alto) * 5)
+    )
+
+    return {
+      x: centroX - lado / 2,
+      y: centroY - lado / 2,
+      lado,
+    }
+  })()
+
   const geometriaVectorial = cartografiaHerrera
     ? cartografiaHerrera.elementos
         .map((elemento, indice) => {
@@ -346,7 +405,7 @@ function LocalizacionRegional({
           </div>
 
           <svg
-            viewBox="0 0 800 800"
+            viewBox={`${vistaPredio.x} ${vistaPredio.y} ${vistaPredio.lado} ${vistaPredio.lado}`}
             style={{
               display: 'block',
               width: '100%',
@@ -387,7 +446,7 @@ function LocalizacionRegional({
         </div>
       )}
 
-      {sistemaCoordenadas === 'utm' && urlMapa && (
+      {sistemaCoordenadas === 'utm' && !cartografiaHerrera && urlMapa && (
         <div
           style={{
             marginTop: '12px',
