@@ -204,3 +204,22 @@ indice.write_text(
 
 print("INDICE ACTUALIZADO:", indice)
 print("SECTORES DISPONIBLES:", len(sectores_indice))
+
+# Publicar sector e indice para uso de TopoIA
+import shutil
+
+carpeta_publica = Path("public/cartografia")
+carpeta_publica.mkdir(parents=True, exist_ok=True)
+
+shutil.copy2(
+    salida,
+    carpeta_publica / salida.name
+)
+
+shutil.copy2(
+    indice,
+    carpeta_publica / indice.name
+)
+
+print("SECTOR PUBLICADO:", carpeta_publica / salida.name)
+print("INDICE PUBLICADO:", carpeta_publica / indice.name)

@@ -9,23 +9,123 @@ function LocalizacionRegional({
   ubicacionGeografica,
   datosProyecto,
   coordenadasFinales = [],
+  sistemaCoordenadas = 'local',
 }) {
   const [cartografiaHerrera, setCartografiaHerrera] = useState(null)
 
   useEffect(() => {
-    fetch('/cartografia/monagrillo_sector.json')
-      .then((respuesta) => respuesta.json())
+    if (sistemaCoordenadas !== 'utm') {
+      setCartografiaHerrera(null)
+      return
+    }
+
+    const estes = coordenadasFinales
+      .map((punto) => Number(punto.este))
+      .filter(Number.isFinite)
+
+    const nortes = coordenadasFinales
+      .map((punto) => Number(punto.norte))
+      .filter(Number.isFinite)
+
+    if (estes.length === 0 || nortes.length === 0) {
+      console.warn(
+        'No hay coordenadas N/E suficientes para seleccionar cartografia.'
+      )
+      setCartografiaHerrera(null)
+      return
+    }
+
+    const centroEste =
+      estes.reduce((suma, valor) => suma + valor, 0) / estes.length
+
+    const centroNorte =
+      nortes.reduce((suma, valor) => suma + valor, 0) / nortes.length
+
+    console.log('PUNTOS REALES RECIBIDOS POR LR:', coordenadasFinales)
+    console.log('CENTRO REAL DEL PREDIO:', {
+      este: centroEste,
+      norte: centroNorte,
+    })
+
+    fetch('/cartografia/indice_sectores.json')
+      .then((respuesta) => {
+        if (!respuesta.ok) {
+          throw new Error('No se pudo cargar el indice de sectores.')
+        }
+
+        return respuesta.json()
+      })
+      .then((indice) => {
+        const sectores = indice.sectores || []
+
+        if (sectores.length === 0) {
+          throw new Error('El indice no contiene sectores.')
+        }
+
+        const sectorEncontrado = sectores.find((sector) => {
+          const esteSector = Number(sector.este)
+          const norteSector = Number(sector.norte)
+          const radioSector = Number(sector.radio)
+
+          return (
+            centroEste >= esteSector - radioSector &&
+            centroEste <= esteSector + radioSector &&
+            centroNorte >= norteSector - radioSector &&
+            centroNorte <= norteSector + radioSector
+          )
+        })
+
+        console.log('Centro predio para cartografia:', {
+          este: centroEste,
+          norte: centroNorte,
+        })
+
+        if (!sectorEncontrado) {
+          throw new Error(
+            `No existe sector cartografico para E=${centroEste.toFixed(2)} N=${centroNorte.toFixed(2)}`
+          )
+        }
+
+        console.log('Sector cartografico seleccionado:', {
+          archivo: sectorEncontrado.archivo,
+          centro: {
+            este: sectorEncontrado.este,
+            norte: sectorEncontrado.norte,
+          },
+          radio: sectorEncontrado.radio,
+        })
+
+        return fetch(
+          `/cartografia/${sectorEncontrado.archivo}`
+        )
+      })
+      .then((respuesta) => {
+        if (!respuesta.ok) {
+          throw new Error(
+            'No se pudo cargar el sector cartografico seleccionado.'
+          )
+        }
+
+        return respuesta.json()
+      })
       .then((datos) => {
         setCartografiaHerrera(datos)
+
         console.log('Cartografia Herrera cargada:', {
+          centro: datos.centro,
+          radio: datos.radio,
           geometrias: datos.elementos?.length || 0,
           textos: datos.textos?.length || 0,
         })
       })
       .catch((error) => {
-        console.error('Error cargando cartografia Herrera:', error)
+        console.error(
+          'Error cargando cartografia Herrera:',
+          error
+        )
+        setCartografiaHerrera(null)
       })
-  }, [])
+  }, [coordenadasFinales, sistemaCoordenadas])
 
   if (!ubicacionGeografica) {
     return (
@@ -136,8 +236,8 @@ function LocalizacionRegional({
     const ymax = centro.norte + radio
 
     return {
-      x: ((Number(este) - xmin) / (xmax - xmin)) * 900,
-      y: (1 - (Number(norte) - ymin) / (ymax - ymin)) * 700,
+      x: ((Number(este) - xmin) / (xmax - xmin)) * 800,
+      y: (1 - (Number(norte) - ymin) / (ymax - ymin)) * 800,
     }
   }
 
@@ -200,6 +300,13 @@ function LocalizacionRegional({
       </div>
 
       <div>
+        <span>Sistema de coordenadas: </span>
+        <strong>
+          {sistemaCoordenadas === 'utm' ? 'UTM' : 'LOCAL'}
+        </strong>
+      </div>
+
+      <div>
         <span>Centro geográfico: </span>
         <strong>
           {latitud.toFixed(6)}, {longitud.toFixed(6)}
@@ -225,7 +332,7 @@ function LocalizacionRegional({
           </div>
 
           <svg
-            viewBox="0 0 900 700"
+            viewBox="0 0 800 800"
             style={{
               display: 'block',
               width: '100%',

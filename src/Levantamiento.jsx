@@ -106,6 +106,10 @@ function Levantamiento({ volver, continuar }) {
     const [tipoLevantamiento, setTipoLevantamiento] = useState(
   datosGuardados?.tipoLevantamiento || 'cerrado'
 )
+const [sistemaCoordenadas, setSistemaCoordenadas] = useState(
+  datosGuardados?.sistemaCoordenadas || 'local'
+)
+
 const [puntoInicial, setPuntoInicial] = useState(
   datosGuardados?.puntoInicial || {
     norte: '',
@@ -462,6 +466,7 @@ const [detalleAmarre, setDetalleAmarre] = useState(
    JSON.stringify({
   metodoEntrada,
   tipoLevantamiento,
+  sistemaCoordenadas,
   puntoInicial,
   rumbosDistancias,
   cierreObservado,
@@ -479,6 +484,7 @@ const [detalleAmarre, setDetalleAmarre] = useState(
 }, [
   metodoEntrada,
   tipoLevantamiento,
+  sistemaCoordenadas,
   puntoInicial,
   rumbosDistancias,
   cierreObservado,
@@ -802,6 +808,41 @@ const tramoPI = datosPIValidos
     </button>
   </div>
 </div>
+<div className="selector-metodo">
+  <div className="selector-metodo-titulo">
+    <span>SISTEMA DE COORDENADAS</span>
+    <p>Indica si las coordenadas permiten ubicar el levantamiento sobre la cartografía.</p>
+  </div>
+
+  <div className="metodo-botones">
+    <button
+      type="button"
+      className={
+        sistemaCoordenadas === 'utm'
+          ? 'metodo-btn activo'
+          : 'metodo-btn'
+      }
+      onClick={() => setSistemaCoordenadas('utm')}
+    >
+      <strong>UTM georreferenciadas</strong>
+      <span>Coordenadas reales Norte / Este para ubicación regional</span>
+    </button>
+
+    <button
+      type="button"
+      className={
+        sistemaCoordenadas === 'local'
+          ? 'metodo-btn activo'
+          : 'metodo-btn'
+      }
+      onClick={() => setSistemaCoordenadas('local')}
+    >
+      <strong>Coordenadas locales</strong>
+      <span>Levantamiento sin ubicación cartográfica absoluta</span>
+    </button>
+  </div>
+</div>
+
 <div className="selector-metodo">
   <div className="selector-metodo-titulo">
     <span>TIPO DE LEVANTAMIENTO</span>
@@ -1814,6 +1855,7 @@ const tramoPI = datosPIValidos
               continuar({
   metodoEntrada,
   tipoLevantamiento,
+  sistemaCoordenadas,
   puntos: puntosActivos,
   segmentos,
   colindancias,

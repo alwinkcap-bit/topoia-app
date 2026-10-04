@@ -877,6 +877,7 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
     ubicacionGeografica={ubicacionGeografica}
     datosProyecto={datosProyecto}
     coordenadasFinales={coordenadasFinales}
+    sistemaCoordenadas={levantamiento?.sistemaCoordenadas || 'local'}
   />
 </section>
 

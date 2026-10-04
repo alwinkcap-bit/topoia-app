@@ -1,0 +1,20 @@
+{
+  "sectores": [
+    {
+      "archivo": "sector_563000_883000.json",
+      "este": 563000.0,
+      "norte": 883000.0,
+      "radio": 1000.0,
+      "geometrias": 1566,
+      "textos": 99
+    },
+    {
+      "archivo": "sector_565000_883000.json",
+      "este": 565000.0,
+      "norte": 883000.0,
+      "radio": 1000.0,
+      "geometrias": 814,
+      "textos": 62
+    }
+  ]
+}
