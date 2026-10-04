@@ -67,12 +67,24 @@ function LocalizacionRegional({
           const norteSector = Number(sector.norte)
           const radioSector = Number(sector.radio)
 
-          return (
-            centroEste >= esteSector - radioSector &&
-            centroEste <= esteSector + radioSector &&
-            centroNorte >= norteSector - radioSector &&
-            centroNorte <= norteSector + radioSector
-          )
+          const xmin = esteSector - radioSector
+          const xmax = esteSector + radioSector
+          const ymin = norteSector - radioSector
+          const ymax = norteSector + radioSector
+
+          return coordenadasFinales.every((punto) => {
+            const este = Number(punto.este)
+            const norte = Number(punto.norte)
+
+            return (
+              Number.isFinite(este) &&
+              Number.isFinite(norte) &&
+              este >= xmin &&
+              este <= xmax &&
+              norte >= ymin &&
+              norte <= ymax
+            )
+          })
         })
 
         console.log('Centro predio para cartografia:', {
