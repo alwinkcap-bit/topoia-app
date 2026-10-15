@@ -315,7 +315,7 @@ function LocalizacionRegional({
 
     const lado = Math.min(
       800,
-      Math.max(120, Math.max(ancho, alto) * 5)
+      Math.max(120, Math.max(ancho, alto) * 3)
     )
 
     return {
@@ -446,7 +446,7 @@ function LocalizacionRegional({
         </div>
       )}
 
-      {sistemaCoordenadas === 'utm' && !cartografiaHerrera && urlMapa && (
+      {sistemaCoordenadas === 'utm' && urlMapa && (
         <div
           style={{
             marginTop: '12px',
