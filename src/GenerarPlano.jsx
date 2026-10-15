@@ -169,7 +169,7 @@ const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
         <section className="resumen-plano">
           <div>
             <span>ÁREA</span>
-            <strong>{Number(area).toFixed(3)} m²</strong>
+            <strong>{Number(area).toFixed(2)} m²</strong>
           </div>
 
           <div>
@@ -178,7 +178,7 @@ const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
       ? 'LONGITUD TOTAL'
       : 'PERÍMETRO'}
   </span>
-  <strong>{Number(perimetro).toFixed(3)} m</strong>
+  <strong>{Number(perimetro).toFixed(2)} m</strong>
 </div>
 
          <div>
@@ -197,7 +197,7 @@ const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
   longitudObservada !== null && (
     <div>
       <span>LONGITUD OBSERVADA</span>
-      <strong>{Number(longitudObservada).toFixed(3)} m</strong>
+      <strong>{Number(longitudObservada).toFixed(2)} m</strong>
     </div>
     
   )}
@@ -206,7 +206,7 @@ const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
   errorCierre && (
     <div>
       <span>ERROR LINEAL</span>
-      <strong>{errorCierre.errorLineal.toFixed(3)} m</strong>
+      <strong>{errorCierre.errorLineal.toFixed(2)} m</strong>
     </div>
   )}
   {levantamiento?.tipoLevantamiento === 'cerrado' &&
@@ -254,7 +254,7 @@ const coordenadasAjustadas = levantamiento?.coordenadasAjustadas || []
 
                     <td>
                       {segmento.distancia !== null
-                        ? `${segmento.distancia.toFixed(3)} m`
+                        ? `${segmento.distancia.toFixed(2)} m`
                         : '—'}
                     </td>
 

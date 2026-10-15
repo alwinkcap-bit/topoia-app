@@ -1,4 +1,10 @@
-function VistaCAD({ levantamiento, volver }) {
+import {
+  calcularCentroPuntos,
+  utm17NAGeograficas,
+} from './geografia'
+import LocalizacionRegional from './LocalizacionRegional'
+
+function VistaCAD({ datosProyecto, levantamiento, volver }) {
       const puntos = levantamiento?.puntos || []
 
   const puntosValidos = puntos.filter(
@@ -54,6 +60,16 @@ function VistaCAD({ levantamiento, volver }) {
     }))
   }
 
+  const centroPredio = calcularCentroPuntos(coordenadasCAD)
+
+  const ubicacionGeografica =
+    levantamiento?.sistemaCoordenadas === 'utm' && centroPredio
+      ? utm17NAGeograficas(
+          centroPredio.este,
+          centroPredio.norte
+        )
+      : null
+
   const puntosCAD = crearVistaCAD()
   const calcularFactorVista = () => {
   if (coordenadasCAD.length < 2) return 1
@@ -93,7 +109,12 @@ const calcularEscalaGrafica = () => {
 
 const escalaGrafica = calcularEscalaGrafica()
 
-const largoEscalaGrafica = escalaGrafica * factorVista
+const largoEscalaGrafica = Math.min(
+  escalaGrafica * factorVista,
+  200
+)
+
+const distanciaEscalaVisible = largoEscalaGrafica / factorVista
 const mitadEscalaGrafica = largoEscalaGrafica / 2
 
   const puntosPolilinea = puntosCAD
@@ -254,7 +275,7 @@ return {
       className="vertice-texto"
     >
       {segmento.distancia !== null
-        ? `${Number(segmento.distancia).toFixed(3)} m`
+        ? `${Number(segmento.distancia).toFixed(2)} m`
         : '—'}
     </text>
 
@@ -270,55 +291,73 @@ return {
 ))}
 {/* Escala gráfica */}
 <g transform="translate(80 455)">
+  <rect
+    x="-15"
+    y="-35"
+    width={Math.max(largoEscalaGrafica + 70, 150)}
+    height="75"
+    fill="white"
+    opacity="0.92"
+    rx="4"
+  />
+
+  <text
+    x="0"
+    y="-16"
+    fontSize="12"
+    fontWeight="bold"
+    fill="#172b4d"
+  >
+    ESCALA GRÁFICA
+  </text>
+
   <line
     x1="0"
     y1="0"
     x2={largoEscalaGrafica}
     y2="0"
-    stroke="#263238"
+    stroke="#172b4d"
     strokeWidth="3"
   />
 
-  <line x1="0" y1="-7" x2="0" y2="7" stroke="#263238" strokeWidth="2" />
+  {[0, mitadEscalaGrafica, largoEscalaGrafica].map((x, i) => (
+    <line
+      key={i}
+      x1={x}
+      y1="-7"
+      x2={x}
+      y2="7"
+      stroke="#172b4d"
+      strokeWidth="2"
+    />
+  ))}
 
-  <line
-    x1={mitadEscalaGrafica}
-    y1="-7"
-    x2={mitadEscalaGrafica}
-    y2="7"
-    stroke="#263238"
-    strokeWidth="2"
-  />
-
-  <line
-    x1={largoEscalaGrafica}
-    y1="-7"
-    x2={largoEscalaGrafica}
-    y2="7"
-    stroke="#263238"
-    strokeWidth="2"
-  />
-
-  <text x="0" y="22" textAnchor="middle" className="vertice-texto">
-    0
-  </text>
+  <text x="0" y="23" textAnchor="middle" fontSize="11">0</text>
 
   <text
     x={mitadEscalaGrafica}
-    y="22"
+    y="23"
     textAnchor="middle"
-    className="vertice-texto"
+    fontSize="11"
   >
-    {escalaGrafica / 2}
+    {(distanciaEscalaVisible / 2).toFixed(2)}
   </text>
 
   <text
     x={largoEscalaGrafica}
-    y="22"
+    y="23"
     textAnchor="middle"
-    className="vertice-texto"
+    fontSize="11"
   >
-    {escalaGrafica} m
+    {distanciaEscalaVisible.toFixed(2)}
+  </text>
+
+  <text
+    x={largoEscalaGrafica + 12}
+    y="23"
+    fontSize="11"
+  >
+    m
   </text>
 </g>
               </svg>
@@ -328,6 +367,19 @@ return {
               </div>
             )}
           </div>
+          {/* Localización regional del plano */}
+          {levantamiento?.sistemaCoordenadas === 'utm' && (
+            <section className="topoia-cad-localizacion">
+              <h3>LOCALIZACIÓN REGIONAL</h3>
+              <LocalizacionRegional
+                ubicacionGeografica={ubicacionGeografica}
+                datosProyecto={datosProyecto}
+                coordenadasFinales={coordenadasCAD}
+                sistemaCoordenadas="utm"
+              />
+            </section>
+          )}
+
           {/* Cuadro de coordenadas */}
 {coordenadasCAD.length > 0 && (
   <div className="cuadro-coordenadas-cad">
@@ -346,8 +398,8 @@ return {
         {coordenadasCAD.map((punto, index) => (
           <tr key={`coord-${punto.nombre}-${index}`}>
             <td>{punto.nombre}</td>
-            <td>{Number(punto.norte).toFixed(3)}</td>
-            <td>{Number(punto.este).toFixed(3)}</td>
+            <td>{Number(punto.norte).toFixed(2)}</td>
+            <td>{Number(punto.este).toFixed(2)}</td>
           </tr>
         ))}
       </tbody>

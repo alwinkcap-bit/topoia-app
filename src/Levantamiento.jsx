@@ -1650,7 +1650,7 @@ const tramoPI = datosPIValidos
   {(tipoLevantamiento === 'cerrado' && metodoEntrada === 'rumbos'
     ? perimetroAjustado
     : perimetro
-  ).toFixed(3)} m
+  ).toFixed(2)} m
 </strong>
             </div>
 {metodoEntrada === 'rumbos' && (

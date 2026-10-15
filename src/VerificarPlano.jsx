@@ -155,7 +155,7 @@ levantamiento?.area != null
   ? `${Number(
       levantamiento?.areaAjustada ??
         levantamiento?.area
-    ).toFixed(3)} m²`
+    ).toFixed(2)} m²`
   : 'No disponible'}
       </strong>
     </div>
@@ -165,9 +165,9 @@ levantamiento?.area != null
      <strong>
   {levantamiento?.metodoEntrada === 'rumbos' &&
   levantamiento?.longitudObservada != null
-    ? `${Number(levantamiento.longitudObservada).toFixed(3)} m`
+    ? `${Number(levantamiento.longitudObservada).toFixed(2)} m`
     : levantamiento?.perimetro != null
-      ? `${Number(levantamiento.perimetro).toFixed(3)} m`
+      ? `${Number(levantamiento.perimetro).toFixed(2)} m`
       : '—'}
 </strong>
     </div>

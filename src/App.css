@@ -982,3 +982,96 @@ footer {
   max-height: 105mm;
 }
 }
+/* ========================================
+   TOPOIA - PRESENTACION CAD PROFESIONAL
+======================================== */
+
+.plano-preview {
+  position: relative;
+  width: 100%;
+  min-height: 540px;
+  padding: 25px;
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(#edf1f5 1px, transparent 1px),
+    linear-gradient(90deg, #edf1f5 1px, transparent 1px);
+  background-size: 25px 25px;
+  border: 2px solid #263746;
+  border-radius: 4px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.plano-preview .poligono-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 500px;
+}
+
+.plano-preview .poligono-forma {
+  fill: rgba(0, 102, 204, 0.08);
+  stroke: #123f76;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.plano-preview .poligono-forma.recorrido-abierto {
+  fill: none;
+}
+
+.plano-preview .vertice {
+  fill: #ffffff;
+  stroke: #c62828;
+  stroke-width: 2.5;
+}
+
+.plano-preview .vertice-texto {
+  fill: #172b4d;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+}
+
+.plano-preview .norte-indicador {
+  color: #123f76;
+}
+
+@media (max-width: 600px) {
+  .plano-preview {
+    min-height: 300px;
+    padding: 10px;
+  }
+
+  .plano-preview .poligono-svg {
+    max-height: 350px;
+  }
+}
+
+@media print {
+  .plano-preview {
+    background-image: none;
+    border: 1px solid #000;
+    break-inside: avoid;
+  }
+}
+
+/* TOPOIA - MEJORA VISUAL DE ESCALA CAD */
+
+.plano-preview .poligono-svg {
+  overflow: visible;
+}
+
+.plano-preview .vertice-texto {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+
+.plano-preview .norte-indicador {
+  font-weight: 800;
+}
+
