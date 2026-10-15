@@ -1,0 +1,37 @@
+.localizacion-regional {
+  width: 100%;
+  padding: 20px;
+  background: #ffffff;
+  color: #172b4d;
+  border: 1px solid #d6dee8;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+.localizacion-regional > div:first-child {
+  text-align: center;
+  background: #102b46;
+  color: white;
+  padding: 14px;
+  margin: -20px -20px 18px;
+  border-radius: 10px 10px 0 0;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.localizacion-regional strong {
+  font-weight: 700;
+}
+
+.localizacion-regional svg {
+  max-width: 100%;
+}
+
+@media print {
+  .localizacion-regional {
+    border: 1px solid #333;
+    border-radius: 0;
+    break-inside: avoid;
+  }
+}

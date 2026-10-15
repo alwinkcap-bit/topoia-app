@@ -1,3 +1,4 @@
+import './LocalizacionRegional.css'
 import { useEffect, useState } from 'react'
 import {
   crearBBoxRegional,
@@ -345,6 +346,17 @@ function LocalizacionRegional({
         .filter(Boolean)
     : []
 
+  const nombresCalles = cartografiaHerrera
+    ? (cartografiaHerrera.textos || [])
+        .filter((texto) => texto.capa === 'NOMBRES DE CALLE')
+        .map((texto, indice) => ({
+          ...texto,
+          id: indice,
+          posicion: convertirNEaMapa(texto.este, texto.norte),
+        }))
+        .filter((texto) => texto.posicion)
+    : []
+
   const urlMapa = bbox
     ? `https://sigigntg.anati.gob.pa/arcgisserver/rest/services/Mapa_Web_de_Poblados_2025_MIL1/MapServer/export?bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}&bboxSR=3857&imageSR=3857&size=900,700&dpi=96&format=png32&transparent=false&f=image`
     : null
@@ -405,7 +417,7 @@ function LocalizacionRegional({
           </div>
 
           <svg
-            viewBox={`${vistaPredio.x} ${vistaPredio.y} ${vistaPredio.lado} ${vistaPredio.lado}`}
+            viewBox={`${vistaPredio.x + vistaPredio.lado / 2 - (500 * 800 / (cartografiaHerrera.radio * 2))} ${vistaPredio.y + vistaPredio.lado / 2 - (500 * 800 / (cartografiaHerrera.radio * 2))} ${(1000 * 800 / (cartografiaHerrera.radio * 2))} ${(1000 * 800 / (cartografiaHerrera.radio * 2))}`}
             style={{
               display: 'block',
               width: '100%',
@@ -413,110 +425,230 @@ function LocalizacionRegional({
               background: '#fff',
             }}
           >
-            {geometriaVectorial.map((elemento) => {
-              const puntos = elemento.puntosMapa
-                .map((punto) => `${punto.x},${punto.y}`)
-                .join(' ')
+            {(() => {
+              const unidad = 800 / (cartografiaHerrera.radio * 2)
+              const lado = 1000 * unidad
+
+              const centroX = predioVectorial.length
+                ? predioVectorial.reduce((s, p) => s + p.x, 0) / predioVectorial.length
+                : 400
+
+              const centroY = predioVectorial.length
+                ? predioVectorial.reduce((s, p) => s + p.y, 0) / predioVectorial.length
+                : 400
+
+              const x0 = centroX - lado / 2
+              const y0 = centroY - lado / 2
+
+              const escalaX = x0 + lado * 0.055
+              const escalaY = y0 + lado * 0.91
+              const tramo = 50 * unidad
 
               return (
-                <polyline
-                  key={`cartografia-${elemento.id}`}
-                  points={puntos}
-                  fill={
-                    elemento.cerrada
-                      ? 'rgba(220,220,220,0.15)'
-                      : 'none'
-                  }
-                  stroke="#777"
-                  strokeWidth="0.7"
-                  vectorEffect="non-scaling-stroke"
-                />
-              )
-            })}
-            {puntosPredioVectorial && (
-              <polygon
-                points={puntosPredioVectorial}
-                fill="rgba(255, 215, 0, 0.55)"
-                stroke="#d40000"
-                strokeWidth="2"
-                vectorEffect="non-scaling-stroke"
-              />
-            )}
-          </svg>
-        </div>
-      )}
+                <>
+                  {/* CARTOGRAFÍA ORIGINAL */}
+                  {geometriaVectorial.map((elemento) => {
+                    const puntos = elemento.puntosMapa
+                      .map((punto) => `${punto.x},${punto.y}`)
+                      .join(' ')
 
-      {sistemaCoordenadas === 'utm' && urlMapa && (
-        <div
-          style={{
-            marginTop: '12px',
-            border: '1px solid #999',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              width: '100%',
-            }}
-          >
-            <img
-              src={urlMapa}
-              alt="Localización regional del predio"
-              style={{
-                display: 'block',
-                width: '100%',
-                height: 'auto',
-              }}
-            />
+                    return (
+                      <polyline
+                        key={`cartografia-${elemento.id}`}
+                        points={puntos}
+                        fill="none"
+                        stroke="#999"
+                        strokeWidth="0.65"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    )
+                  })}
 
-            {puntosPoligono && (
-              <svg
-                viewBox="0 0 900 700"
-                preserveAspectRatio="xMidYMid meet"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  pointerEvents: 'none',
-                }}
-              >
-                <polygon
-                  points={puntosPoligono}
-                  fill="rgba(255, 215, 0, 0.35)"
-                  stroke="#d40000"
-                  strokeWidth="0.7"
-                  vectorEffect="non-scaling-stroke"
-                />
+                  {/* NOMBRES DE CALLES */}
+                  {nombresCalles.map((calle) => (
+                    <text
+                      key={`calle-${calle.id}`}
+                      x={calle.posicion.x}
+                      y={calle.posicion.y}
+                      fontSize="1.8"
+                      fill="#333"
+                      stroke="#fff"
+                      strokeWidth="0.4"
+                      paintOrder="stroke"
+                      textAnchor="middle"
+                    >
+                      {calle.texto}
+                    </text>
+                  ))}
 
-                {verticesMapa.map((punto, indice) => (
-                  <g key={indice}>
+                  {/* LOTE */}
+                  {predioVectorial.length > 0 && (
+                    <g>
+                      <circle
+                        cx={centroX}
+                        cy={centroY}
+                        r={lado * 0.012}
+                        fill="#000"
+                        stroke="#fff"
+                        strokeWidth="0.7"
+                      />
+                      <path
+                        d={`M ${centroX + lado * 0.012} ${centroY - lado * 0.012}
+                            L ${centroX + lado * 0.07} ${centroY - lado * 0.065}`}
+                        fill="none"
+                        stroke="#000"
+                        strokeWidth={lado * 0.004}
+                      />
+                      <rect
+                        x={centroX + lado * 0.07}
+                        y={centroY - lado * 0.105}
+                        width={lado * 0.105}
+                        height={lado * 0.045}
+                        fill="#fff"
+                        stroke="#000"
+                        strokeWidth={lado * 0.002}
+                      />
+                      <text
+                        x={centroX + lado * 0.1225}
+                        y={centroY - lado * 0.074}
+                        fontSize={lado * 0.028}
+                        fontWeight="bold"
+                        textAnchor="middle"
+                        fill="#000"
+                      >
+                        LOTE
+                      </text>
+                    </g>
+                  )}
+
+                  {/* ROSA DE LOS VIENTOS: NORTE UTM */}
+                  <g transform={`translate(${x0 + lado * 0.88}, ${y0 + lado * 0.16})`}>
+                    
+
+                    <text
+                      y={-lado * 0.072}
+                      fontSize={lado * 0.028}
+                      fontWeight="bold"
+                      textAnchor="middle"
+                    >
+                      N
+                    </text>
+
                     <circle
-                      cx={punto.x}
-                      cy={punto.y}
-                      r="5"
-                      fill="#d40000"
+                      cx="0"
+                      cy={lado * 0.018}
+                      r={lado * 0.052}
+                      fill="none"
+                      stroke="#000"
+                      strokeWidth={lado * 0.002}
+                    />
+
+                    <path
+                      d={`M 0 ${-lado * 0.048}
+                          L ${-lado * 0.022} ${lado * 0.066}
+                          L 0 ${lado * 0.042}
+                          L ${lado * 0.022} ${lado * 0.066} Z`}
+                      fill="#000"
+                    />
+
+                    <path
+                      d={`M 0 ${-lado * 0.048}
+                          L ${-lado * 0.022} ${lado * 0.066}
+                          L 0 ${lado * 0.042} Z`}
+                      fill="#fff"
+                      stroke="#000"
+                      strokeWidth={lado * 0.002}
                     />
 
                     <text
-                      x={punto.x + 8}
-                      y={punto.y - 8}
-                      fontSize="18"
-                      fill="#000"
-                      stroke="#fff"
-                      strokeWidth="0.35"
-                      paintOrder="stroke"
+                      y={lado * 0.105}
+                      fontSize={lado * 0.014}
+                      textAnchor="middle"
+                      fontWeight="bold"
                     >
-                      {`M${indice + 1}`}
+                      NORTE UTM
                     </text>
                   </g>
+
+
+                </>
+              )
+            })()}
+          </svg>
+          {/* ESCALA GRÁFICA FUERA DE LA CARTOGRAFÍA */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '5px 8px 7px',
+              background: '#fff',
+              borderTop: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: 'min(100%, 330px)',
+                border: 'none',
+                padding: '2px 8px 3px',
+                background: '#fff',
+                boxSizing: 'border-box',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 'bold',
+                  letterSpacing: '1px',
+                  marginBottom: '2px',
+                  color: '#222',
+                }}
+              >
+                ESCALA GRÁFICA
+              </div>
+              <svg
+                viewBox="0 0 300 45"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  height: 'auto',
+                }}
+              >
+                {[0, 1, 2, 3].map((i) => (
+                  <rect
+                    key={i}
+                    x={20 + i * 60}
+                    y="5"
+                    width="60"
+                    height="14"
+                    fill={i % 2 === 0 ? '#111' : '#fff'}
+                    stroke="#111"
+                    strokeWidth="1"
+                  />
                 ))}
+                {[0, 50, 100, 150, 200].map((m, i) => (
+                  <text
+                    key={m}
+                    x={20 + i * 60}
+                    y="36"
+                    fontSize="12"
+                    fill="#111"
+                    textAnchor="middle"
+                  >
+                    {m}
+                  </text>
+                ))}
+                <text x="280" y="36" fontSize="12" fill="#111">
+                  m
+                </text>
               </svg>
-            )}
+            </div>
           </div>
+
         </div>
       )}
+
+
     </div>
   )
 }
