@@ -94,7 +94,59 @@ export default function PlanoImpresion({
               strokeWidth="0.5"
             />
           )}
+{(levantamiento?.segmentos || []).map((seg, i) => {
+  const inicio = puntosDibujo.find(p => p.nombre === seg.desde)
+  const fin = puntosDibujo.find(p => p.nombre === seg.hasta)
 
+  if (!inicio || !fin) return null
+
+  const dx = fin.x - inicio.x
+  const dy = fin.y - inicio.y
+  const longitud = Math.hypot(dx, dy)
+
+  if (longitud === 0) return null
+
+  const centroX = (inicio.x + fin.x) / 2
+  const centroY = (inicio.y + fin.y) / 2
+
+  // Desplazamiento perpendicular al lado del terreno
+  const desplazamiento = 7
+  const x = centroX - (dy / longitud) * desplazamiento
+  const y = centroY + (dx / longitud) * desplazamiento
+
+  const distancia = Number(seg.distancia)
+  const textoDistancia =
+    seg.distancia != null &&
+    seg.distancia !== '' &&
+    Number.isFinite(distancia)
+      ? `${distancia.toFixed(2)} m`
+      : '—'
+
+  return (
+    <g key={`medida-${i}`}>
+      <text
+        x={x}
+        y={y - 2}
+        fontSize="4.5"
+        fontWeight="bold"
+        textAnchor="middle"
+        fill="#000"
+      >
+        {textoDistancia}
+      </text>
+
+      <text
+        x={x}
+        y={y + 2}
+        fontSize="3.5"
+        textAnchor="middle"
+        fill="#000"
+      >
+        {seg.rumbo || '—'}
+      </text>
+    </g>
+  )
+})}
           {puntosDibujo.map((p, i) => (
             <g key={i}>
               <circle cx={p.x} cy={p.y} r="1.2" fill="#000" />
@@ -129,6 +181,7 @@ export default function PlanoImpresion({
         </div>
       </div>
 
+      <div className="topoia-columna-datos">
       <div className="topoia-datos-campo">
         <h3>DATOS DE CAMPO</h3>
         <table>
@@ -162,6 +215,28 @@ export default function PlanoImpresion({
             })}
           </tbody>
         </table>
+      </div>
+
+
+      <section className="topoia-cuadro-pi">
+        <h3>PUNTOS DE INTERÉS (PI)</h3>
+        <table>
+          <thead><tr><th>PUNTO</th><th>NORTE</th><th>ESTE</th></tr></thead>
+          <tbody>
+            {['pi1', 'pi2'].map((id, i) => {
+              const p = levantamiento?.puntosPI?.[id]
+              if (!p || p.norte === '' || p.este === '' ||
+                  !Number.isFinite(Number(p.norte)) ||
+                  !Number.isFinite(Number(p.este))) return null
+              return <tr key={id}>
+                <td>PI-{i + 1}</td>
+                <td>{Number(p.norte).toFixed(3)}</td>
+                <td>{Number(p.este).toFixed(3)}</td>
+              </tr>
+            })}
+          </tbody>
+        </table>
+      </section>
       </div>
 
       <footer className="topoia-pie-plano">

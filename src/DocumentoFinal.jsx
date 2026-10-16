@@ -1,8 +1,11 @@
+import "./DocumentoFinal.css"
+import PlanoImpresion from './PlanoImpresion'
 import {
   calcularCentroPuntos,
   utm17NAGeograficas,
 } from './geografia'
 import LocalizacionRegional from './LocalizacionRegional'
+import DetalleAmarre from './DetalleAmarre'
 
 function DocumentoFinal({
   datosProyecto,
@@ -33,6 +36,15 @@ const restoLibre = areaFolioReal - areaSegregar
           (punto) => punto.nombre !== 'M1 CIERRE'
         )
       : puntosValidos
+
+  console.table(
+    coordenadasFinales.map((p, i) => ({
+      orden: i + 1,
+      nombre: p.nombre,
+      este: p.este,
+      norte: p.norte
+    }))
+  )
 
   const centroPredio = calcularCentroPuntos(coordenadasFinales)
 
@@ -481,7 +493,17 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
         </div>
       </div>
 
-      <main className="form-plano">
+      <div className="no-imprimir">
+        <h3>Vista previa del plano topográfico</h3>
+      </div>
+      <PlanoImpresion
+        datosProyecto={datosProyecto}
+        levantamiento={levantamiento}
+        coordenadasFinales={coordenadasFinales}
+        ubicacionGeografica={ubicacionGeografica}
+      />
+
+      <main className="form-plano topoia-datos-ocultos">
         <section className="form-seccion">
           <div className="form-seccion-titulo">
             <span>01</span>
@@ -872,6 +894,8 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
       </p>
     </div>
   </div>
+
+  <DetalleAmarre coordenadasFinales={coordenadasFinales} detalleAmarre={levantamiento?.detalleAmarre} tramoAmarre={levantamiento?.tramoAmarre} sistemaCoordenadas={levantamiento?.sistemaCoordenadas || "local"} />
 
   <LocalizacionRegional
     ubicacionGeografica={ubicacionGeografica}
