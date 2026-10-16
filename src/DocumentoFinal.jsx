@@ -439,6 +439,79 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
       '1',
       'N'
     )
+
+    // Puntos de interés PI-1 y PI-2
+    const pi1 = levantamiento?.puntosPI?.pi1
+    const pi2 = levantamiento?.puntosPI?.pi2
+
+    const piValidos = [pi1, pi2].every(
+      (p) =>
+        p &&
+        p.norte !== '' &&
+        p.este !== '' &&
+        Number.isFinite(Number(p.norte)) &&
+        Number.isFinite(Number(p.este))
+    )
+
+    if (piValidos) {
+      ;[pi1, pi2].forEach((p, i) => {
+        lineas.push(
+          '0', 'POINT', '8', 'PUNTOS_PI',
+          '10', String(Number(p.este)),
+          '20', String(Number(p.norte)),
+          '30', '0'
+        )
+        lineas.push(
+          '0', 'TEXT', '8', 'TEXTOS_PI',
+          '10', String(Number(p.este) + 1),
+          '20', String(Number(p.norte) + 1),
+          '30', '0', '40', '1.5',
+          '1', `PI-${i + 1}`
+        )
+      })
+
+      // Rumbo y distancia entre PI-1 y PI-2
+      const distanciaPI = levantamiento?.tramoPI?.distancia
+      const rumboPI = levantamiento?.tramoPI?.rumbo
+
+      const medioEstePI =
+        (Number(pi1.este) + Number(pi2.este)) / 2
+      const medioNortePI =
+        (Number(pi1.norte) + Number(pi2.norte)) / 2
+
+      if (Number.isFinite(Number(distanciaPI)) &&
+          distanciaPI !== null &&
+          distanciaPI !== undefined) {
+        lineas.push(
+          '0', 'TEXT', '8', 'DATOS_PI',
+          '10', String(medioEstePI),
+          '20', String(medioNortePI + 2),
+          '30', '0', '40', '1.5',
+          '1', `${Number(distanciaPI).toFixed(2)} m`
+        )
+      }
+
+      if (rumboPI) {
+        lineas.push(
+          '0', 'TEXT', '8', 'DATOS_PI',
+          '10', String(medioEstePI),
+          '20', String(medioNortePI - 2),
+          '30', '0', '40', '1.5',
+          '1', String(rumboPI)
+        )
+      }
+
+      lineas.push(
+        '0', 'LINE', '8', 'LINEA_PI',
+        '10', String(Number(pi1.este)),
+        '20', String(Number(pi1.norte)),
+        '30', '0',
+        '11', String(Number(pi2.este)),
+        '21', String(Number(pi2.norte)),
+        '31', '0'
+      )
+    }
+
     lineas.push(
       '0',
       'ENDSEC',
