@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import "./DocumentoFinal.css"
 import PlanoImpresion from './PlanoImpresion'
 import {
@@ -13,7 +14,14 @@ function DocumentoFinal({
   volver,
   verCAD,
 }) {
-      const puntos = levantamiento?.puntos || []
+      const [tamanoImpresion, setTamanoImpresion] = useState('grande')
+
+  const imprimirPlano = () => {
+    document.getElementById('topoia-papel-dinamico')?.remove()
+    window.print()
+  }
+
+  const puntos = levantamiento?.puntos || []
       const segmentos = levantamiento?.segmentos || []
       const areaFolioReal = Number(datosProyecto?.areaFolioReal || 0)
 
@@ -569,12 +577,14 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
       <div className="no-imprimir">
         <h3>Vista previa del plano topográfico</h3>
       </div>
+      <div className={`topoia-formato-${tamanoImpresion}`}>
       <PlanoImpresion
         datosProyecto={datosProyecto}
         levantamiento={levantamiento}
         coordenadasFinales={coordenadasFinales}
         ubicacionGeografica={ubicacionGeografica}
       />
+      </div>
 
       <main className="form-plano topoia-datos-ocultos">
         <section className="form-seccion">
@@ -1139,10 +1149,21 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
   </section>
 )}
 <div className="form-acciones no-imprimir">
+  <label>
+    Tamaño del plano:
+    <select
+      value={tamanoImpresion}
+      onChange={e => setTamanoImpresion(e.target.value)}
+    >
+      <option value="grande">36 × 24 pulgadas</option>
+      <option value="pequeno">17 × 11 pulgadas</option>
+    </select>
+  </label>
+
   <button
     type="button"
     className="btn-continuar"
-    onClick={() => window.print()}
+    onClick={imprimirPlano}
   >
     Imprimir / Guardar PDF
   </button>

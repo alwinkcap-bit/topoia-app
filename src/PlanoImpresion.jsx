@@ -76,6 +76,41 @@ export default function PlanoImpresion({
     <div className="topoia-hoja">
       <div className="topoia-poligono">
         <p>Escala 1:{escalaSeleccionada}</p>
+          {/* NORTE TOPOGRÁFICO DEL POLÍGONO */}
+          <svg className="topoia-norte-independiente" viewBox="-12 0 24 70"><g transform="translate(0 42) scale(1 1.2)">
+            <text
+              x="0"
+              y="-29"
+              textAnchor="middle"
+              fontSize="10"
+              fontWeight="bold"
+              fill="#000"
+            >
+              N
+            </text>
+            <path
+              d="M 0 -24 L -7 8 L 0 3 Z"
+              fill="#000"
+              stroke="#000"
+              strokeWidth="0.6"
+            />
+            <path
+              d="M 0 -24 L 7 8 L 0 3 Z"
+              fill="#fff"
+              stroke="#000"
+              strokeWidth="0.6"
+            />
+            <line
+              x1="0"
+              y1="3"
+              x2="0"
+              y2="20"
+              stroke="#000"
+              strokeWidth="1"
+            />
+          </g></svg>
+
+
 
         <svg
           viewBox="0 0 260 200"
