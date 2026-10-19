@@ -404,6 +404,9 @@ function LocalizacionRegional({
             marginTop: '12px',
             border: '1px solid #999',
             background: '#fff',
+            width: '80%',
+            maxWidth: '100%',
+            boxSizing: 'border-box',
           }}
         >
           <div
@@ -429,13 +432,8 @@ function LocalizacionRegional({
               const unidad = 800 / (cartografiaHerrera.radio * 2)
               const lado = 1000 * unidad
 
-              const centroX = predioVectorial.length
-                ? predioVectorial.reduce((s, p) => s + p.x, 0) / predioVectorial.length
-                : 400
-
-              const centroY = predioVectorial.length
-                ? predioVectorial.reduce((s, p) => s + p.y, 0) / predioVectorial.length
-                : 400
+              const centroX = vistaPredio.x + vistaPredio.lado / 2
+              const centroY = vistaPredio.y + vistaPredio.lado / 2
 
               const x0 = centroX - lado / 2
               const y0 = centroY - lado / 2

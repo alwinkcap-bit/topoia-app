@@ -570,3 +570,268 @@
     display: none !important;
   }
 }
+
+/* TOPOIA - DETALLE DE AREA Y NOTAS */
+.topoia-hoja .topoia-detalle-area,
+.topoia-hoja .topoia-notas-plano {
+  width: 100%;
+  padding: 3mm 2mm;
+  box-sizing: border-box;
+  color: #000;
+}
+
+.topoia-hoja .topoia-detalle-area {
+  margin-top: 12mm;
+}
+
+.topoia-hoja .topoia-notas-plano {
+  margin-top: 12mm;
+}
+
+.topoia-hoja .topoia-detalle-area h3,
+.topoia-hoja .topoia-notas-plano h3 {
+  font-size: 11pt;
+  text-align: center;
+  margin: 0 0 4mm;
+}
+
+.topoia-hoja .topoia-detalle-area p,
+.topoia-hoja .topoia-notas-plano p {
+  font-size: 9pt;
+  line-height: 1.5;
+  margin: 2mm 0;
+}
+
+/* TOPOIA - DESCRIPCION EDITABLE DEL CAJETIN */
+.topoia-editor-cajetin {
+  padding: 12px;
+  margin: 10px 0;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.topoia-editor-cajetin textarea {
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.topoia-hoja .cajetin-descripcion-editable {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.topoia-hoja .cajetin-descripcion-editable p {
+  margin: 1mm 0;
+  font-size: 8pt;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+@media print {
+  .topoia-editor-cajetin {
+    display: none !important;
+  }
+}
+
+/* TOPOIA - CAJETIN CON LEYENDA HORIZONTAL */
+.topoia-hoja .pie-cajetin-tecnico {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+/* Descripcion extendida a todo el ancho */
+.topoia-hoja .pie-cajetin-tecnico .cajetin-descripcion {
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  max-height: 32mm !important;
+  padding: 1.5mm 3mm !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  text-align: left !important;
+}
+
+/* Texto compacto, sin centrar */
+.topoia-hoja .pie-cajetin-tecnico .cajetin-descripcion p {
+  font-size: 9pt !important;
+  line-height: 1.15 !important;
+  margin: 0 0 1mm !important;
+  text-align: left !important;
+  overflow-wrap: anywhere;
+}
+
+/* Reservar espacio para el tecnico y la firma */
+.topoia-hoja .pie-cajetin-tecnico .cajetin-parte-inferior {
+  flex: 1 1 auto !important;
+  min-height: 30mm !important;
+  grid-template-columns: 1fr 1fr !important;
+}
+
+/* Datos profesionales */
+.topoia-hoja .pie-cajetin-tecnico .cajetin-profesional {
+  font-size: 9pt !important;
+  line-height: 1.15 !important;
+  gap: 0.5mm !important;
+  padding: 1mm !important;
+}
+
+.topoia-hoja .pie-cajetin-tecnico .cajetin-area {
+  font-size: 12pt !important;
+  padding: 1mm !important;
+}
+
+
+/* LEYENDA TECNICA EN TEXTO CORRIDO */
+.topoia-hoja .pie-cajetin-tecnico .cajetin-descripcion {
+  width: 100% !important;
+  text-align: left !important;
+  padding: 2mm 3mm !important;
+  white-space: normal !important;
+}
+
+.topoia-hoja .pie-cajetin-tecnico .cajetin-texto-corrido {
+  display: block !important;
+  width: 100% !important;
+  font-size: 10pt !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+  text-align: left !important;
+  white-space: pre-line !important;
+  overflow-wrap: break-word !important;
+}
+
+
+/* TOPOIA - FIRMAS DINAMICAS */
+.topoia-hoja .pie-firmas {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-evenly !important;
+  padding: 3mm !important;
+  overflow: hidden !important;
+}
+
+.topoia-hoja .topoia-firma-persona {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 0;
+}
+
+.topoia-hoja .topoia-firma-linea {
+  width: 85%;
+  height: 8mm;
+  border-bottom: 1px solid #000;
+  margin-bottom: 1mm;
+}
+
+.topoia-hoja .topoia-firma-nombre {
+  font-size: 9pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.topoia-hoja .topoia-firma-cedula {
+  font-size: 8pt;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+
+/* TOPOIA - CAJETIN TECNICO 15 x 10 CM */
+@media screen, print {
+  .topoia-hoja .topoia-pie-plano > .pie-cajetin-tecnico {
+    width: 150mm !important;
+    min-width: 150mm !important;
+    max-width: 150mm !important;
+    height: 100mm !important;
+    min-height: 100mm !important;
+    max-height: 100mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
+  }
+
+  .topoia-hoja .topoia-pie-plano {
+    grid-template-columns: 100mm 100mm 150mm !important;
+  }
+}
+
+/* TOPOIA - MEJORA DE FIRMAS */
+@media screen, print {
+
+  .topoia-hoja .pie-firmas .topoia-firma-persona {
+    width: 100% !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 1mm !important;
+  }
+
+  .topoia-hoja .pie-firmas .topoia-firma-linea {
+    width: 95% !important;
+    height: 12mm !important;
+    flex-shrink: 0 !important;
+    border-bottom: 1.5px solid #000 !important;
+    margin-bottom: 2mm !important;
+  }
+
+  .topoia-hoja .pie-firmas .topoia-firma-nombre {
+    font-size: 11pt !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    text-transform: uppercase !important;
+  }
+
+  .topoia-hoja .pie-firmas .topoia-firma-cedula {
+    font-size: 10pt !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+  }
+
+}
+
+/* FIRMAS HORIZONTALES - TOPOIA */
+@media screen, print {
+  .topoia-hoja .topoia-pie-plano > .pie-firmas {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .topoia-hoja .pie-firmas .topoia-firma-linea {
+    width: 100mm !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .topoia-hoja .pie-firmas .topoia-firma-datos-horizontal {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 1mm;
+    text-align: center;
+    font-size: 10pt;
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* TOPOIA - SEPARACION ENTRE FIRMAS Y SELLOS */
+@media screen, print {
+  .topoia-hoja .pie-firmas .topoia-firma-linea {
+    width: calc(100% - 5mm) !important;
+    max-width: calc(100% - 5mm) !important;
+    margin-left: 0 !important;
+    margin-right: 5mm !important;
+    box-sizing: border-box !important;
+  }
+
+  .topoia-hoja .pie-firmas .topoia-firma-datos-horizontal {
+    padding-left: 1mm !important;
+    padding-right: 6mm !important;
+  }
+}

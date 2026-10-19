@@ -349,11 +349,8 @@ export default function PlanoImpresion({
             .map((persona, indice) => (
               <div className="topoia-firma-persona" key={indice}>
                 <div className="topoia-firma-linea"></div>
-                <div className="topoia-firma-nombre">
-                  {persona.tipo}: {persona.nombre}
-                </div>
-                <div className="topoia-firma-cedula">
-                  CÉDULA N.º {persona.cedula || '—'}
+                <div className="topoia-firma-datos-horizontal">
+                  {persona.tipo}: {persona.nombre} — CÉDULA N.º {persona.cedula || '—'}
                 </div>
               </div>
             ))}
