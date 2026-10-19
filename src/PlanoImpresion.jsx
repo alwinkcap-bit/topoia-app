@@ -34,13 +34,34 @@ export default function PlanoImpresion({
   const escalas = [250, 500, 1000, 2000, 5000]
 
   const puntosValidos = coordenadasFinales.filter(
-    p => Number.isFinite(Number(p.este)) &&
-         Number.isFinite(Number(p.norte)) &&
-         p.este !== '' && p.norte !== ''
+    p => p.este !== '' &&
+         p.norte !== '' &&
+         Number.isFinite(Number(p.este)) &&
+         Number.isFinite(Number(p.norte))
   )
 
-  const estes = puntosValidos.map(p => Number(p.este))
-  const nortes = puntosValidos.map(p => Number(p.norte))
+  const puntosPIValidos = ['pi1', 'pi2'].flatMap((id, i) => {
+    const p = levantamiento?.puntosPI?.[id]
+
+    if (!p || p.este === '' || p.norte === '' ||
+        p.este == null || p.norte == null ||
+        !Number.isFinite(Number(p.este)) ||
+        !Number.isFinite(Number(p.norte))) return []
+
+    return [{
+      ...p,
+      nombre: `PI-${i + 1}`,
+      este: Number(p.este),
+      norte: Number(p.norte),
+    }]
+  })
+
+  // El encuadre y la escala se calculan solo con el terreno.
+  // PI1 y PI2 mantienen sus coordenadas independientes.
+  const puntosEncuadre = puntosValidos
+
+  const estes = puntosEncuadre.map(p => Number(p.este))
+  const nortes = puntosEncuadre.map(p => Number(p.norte))
 
   const anchoTerreno = estes.length
     ? Math.max(...estes) - Math.min(...estes)
@@ -50,11 +71,15 @@ export default function PlanoImpresion({
     ? Math.max(...nortes) - Math.min(...nortes)
     : 0
 
-  const escalaAutomatica = escalas.find(
+  const escalasAmpliadas = [
+    ...escalas, 7500, 10000, 15000, 20000, 25000, 50000
+  ]
+
+  const escalaAutomatica = escalasAmpliadas.find(
     escala =>
       anchoTerreno * 1000 / escala <= 220 &&
       altoTerreno * 1000 / escala <= 160
-  ) || escalas[escalas.length - 1]
+  ) || escalasAmpliadas[escalasAmpliadas.length - 1]
 
   const escalaSeleccionada = escalaManual === 'auto'
     ? escalaAutomatica
@@ -74,12 +99,15 @@ export default function PlanoImpresion({
   const offsetX = (anchoDibujo - anchoPoligono) / 2
   const offsetY = (altoDibujo - altoPoligono) / 2
 
-  const puntosDibujo = puntosValidos.map(p => ({
+  const transformarPunto = p => ({
     ...p,
     x: offsetX + (Number(p.este) - minEste) * metrosAMilimetros,
     y: altoDibujo - offsetY -
        (Number(p.norte) - minNorte) * metrosAMilimetros
-  }))
+  })
+
+  const puntosDibujo = puntosValidos.map(transformarPunto)
+  const puntosPIDibujo = puntosPIValidos.map(transformarPunto)
 
   console.table(
     puntosDibujo.map(p => ({
@@ -149,60 +177,7 @@ export default function PlanoImpresion({
               stroke="#000"
               strokeWidth="0.5"
             />
-          )}
-{(levantamiento?.segmentos || []).map((seg, i) => {
-  const inicio = puntosDibujo.find(p => p.nombre === seg.desde)
-  const fin = puntosDibujo.find(p => p.nombre === seg.hasta)
-
-  if (!inicio || !fin) return null
-
-  const dx = fin.x - inicio.x
-  const dy = fin.y - inicio.y
-  const longitud = Math.hypot(dx, dy)
-
-  if (longitud === 0) return null
-
-  const centroX = (inicio.x + fin.x) / 2
-  const centroY = (inicio.y + fin.y) / 2
-
-  // Desplazamiento perpendicular al lado del terreno
-  const desplazamiento = 7
-  const x = centroX - (dy / longitud) * desplazamiento
-  const y = centroY + (dx / longitud) * desplazamiento
-
-  const distancia = Number(seg.distancia)
-  const textoDistancia =
-    seg.distancia != null &&
-    seg.distancia !== '' &&
-    Number.isFinite(distancia)
-      ? `${distancia.toFixed(2)} m`
-      : '—'
-
-  return (
-    <g key={`medida-${i}`}>
-      <text
-        x={x}
-        y={y - 2}
-        fontSize="4.5"
-        fontWeight="bold"
-        textAnchor="middle"
-        fill="#000"
-      >
-        {textoDistancia}
-      </text>
-
-      <text
-        x={x}
-        y={y + 2}
-        fontSize="3.5"
-        textAnchor="middle"
-        fill="#000"
-      >
-        {seg.rumbo || '—'}
-      </text>
-    </g>
-  )
-})}
+                    )}
           {puntosDibujo.map((p, i) => (
             <g key={i}>
               <circle cx={p.x} cy={p.y} r="1.2" fill="#000" />
@@ -212,7 +187,7 @@ export default function PlanoImpresion({
                 fontSize="3"
                 fill="#000"
               >
-                {p.nombre}
+                {i + 1}
               </text>
             </g>
           ))}
