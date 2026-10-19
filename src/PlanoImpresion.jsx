@@ -9,6 +9,27 @@ export default function PlanoImpresion({
   coordenadasFinales = [],
   ubicacionGeografica,
 }) {
+  const areaMadre = Number(datosProyecto?.areaFolioReal)
+  const areaSegregar = Number(
+    levantamiento?.areaAjustada ?? levantamiento?.area
+  )
+
+  const areaValidaMadre =
+    datosProyecto?.areaFolioReal !== '' &&
+    datosProyecto?.areaFolioReal != null &&
+    Number.isFinite(areaMadre) && areaMadre >= 0
+
+  const areaValidaSegregar =
+    Number.isFinite(areaSegregar) && areaSegregar >= 0 &&
+    (levantamiento?.areaAjustada != null ||
+     levantamiento?.area != null)
+
+  const formatoArea = (area) =>
+    Number.isFinite(area) && area >= 0
+      ? `${area.toFixed(2)} m² (${(area / 10000).toFixed(4)} ha)`
+      : '—'
+
+
   const [escalaManual, setEscalaManual] = useState('auto')
   const escalas = [250, 500, 1000, 2000, 5000]
 
@@ -272,19 +293,70 @@ export default function PlanoImpresion({
           </tbody>
         </table>
       </section>
+
+      <section className="topoia-detalle-area">
+        <h3>DETALLE DE ÁREA</h3>
+        <p><b>ÁREA DE FINCA MADRE:</b> {
+          areaValidaMadre ? formatoArea(areaMadre) : '—'
+        }</p>
+        <p><b>ÁREA A SEGREGAR:</b> {
+          areaValidaSegregar ? formatoArea(areaSegregar) : '—'
+        }</p>
+        <p><b>ÁREA DEL RESTO LIBRE:</b> {
+          areaValidaMadre && areaValidaSegregar
+            ? formatoArea(areaMadre - areaSegregar)
+            : '—'
+        }</p>
+      </section>
+
+      <section className="topoia-notas-plano">
+        <h3>NOTAS</h3>
+        <p>1. SISTEMA DE COORDENADAS: {
+          levantamiento?.sistemaCoordenadas === 'utm'
+            ? 'UTM'
+            : 'LOCAL'
+        }.</p>
+        <p>2. LEVANTAMIENTO TOPOGRÁFICO REPRESENTADO
+        SEGÚN LOS DATOS REGISTRADOS EN TOPOIA.</p>
+      </section>
       </div>
 
+
       <footer className="topoia-pie-plano">
-        <section className="pie-aprobaciones">
-          <h4>APROBACIONES Y SELLOS</h4>
-          <div className="pie-espacio-sello"></div>
-          <p>Espacio reservado para revisión y aprobación</p>
-        </section>
+        <section className="pie-aprobaciones"></section>
 
         <section className="pie-firmas">
-          <h4>FIRMAS DE INTERESADOS</h4>
-          <div className="pie-linea-firma">PROPIETARIO: {datosProyecto?.propietario || '—'}</div>
-          <div className="pie-linea-firma">OTROS INTERESADOS</div>
+          {[
+            {
+              tipo: 'PROPIETARIO',
+              nombre: datosProyecto?.propietario || '',
+              cedula: datosProyecto?.cedulaPropietario || ''
+            },
+            {
+              tipo: 'ADQUIRIENTE',
+              nombre: datosProyecto?.adquiriente || '',
+              cedula: datosProyecto?.cedulaAdquiriente || ''
+            },
+            ...(Array.isArray(datosProyecto?.adquirientesAdicionales)
+              ? datosProyecto.adquirientesAdicionales.map(persona => ({
+                  tipo: 'ADQUIRIENTE',
+                  nombre: persona.nombre || '',
+                  cedula: persona.cedula || ''
+                }))
+              : [])
+          ]
+            .filter(persona => persona.nombre.trim())
+            .map((persona, indice) => (
+              <div className="topoia-firma-persona" key={indice}>
+                <div className="topoia-firma-linea"></div>
+                <div className="topoia-firma-nombre">
+                  {persona.tipo}: {persona.nombre}
+                </div>
+                <div className="topoia-firma-cedula">
+                  CÉDULA N.º {persona.cedula || '—'}
+                </div>
+              </div>
+            ))}
         </section>
 
         <section className="pie-informacion pie-cajetin-tecnico">
@@ -301,10 +373,37 @@ export default function PlanoImpresion({
             </div>
           </div>
 
-          <div className="cajetin-descripcion">
-            <p><b>PROPIETARIO:</b> {datosProyecto?.propietario || '—'}</p>
-            <p><b>FOLIO REAL:</b> {datosProyecto?.folioReal || '—'}</p>
-            <p><b>PREDIO:</b> {datosProyecto?.numeroPredio || '—'}</p>
+          <div className="cajetin-descripcion cajetin-descripcion-editable">
+            {(() => {
+              const leyenda = datosProyecto?.descripcionCajetin?.trim()
+
+              const texto = leyenda || [
+                datosProyecto?.tipoPlano === 'segregacion'
+                  ? 'LOTE DE TERRENO QUE SERÁ SEGREGADO'
+                  : 'LOTE DE TERRENO',
+                datosProyecto?.folioReal
+                  ? `DEL FOLIO REAL N.º ${datosProyecto.folioReal}`
+                  : '',
+                datosProyecto?.documentoRegistral
+                  ? `DOCUMENTO N.º ${datosProyecto.documentoRegistral}`
+                  : '',
+                datosProyecto?.codigoUbicacion
+                  ? `CÓDIGO DE UBICACIÓN N.º ${datosProyecto.codigoUbicacion}`
+                  : '',
+                datosProyecto?.propietario
+                  ? `PROPIEDAD DE: ${datosProyecto.propietario}`
+                  : '',
+                datosProyecto?.cedulaPropietario
+                  ? `CÉDULA N.º ${datosProyecto.cedulaPropietario}`
+                  : '',
+              ].filter(Boolean).join(', ') + '.'
+
+              return (
+                <p className="cajetin-texto-corrido">
+                  {texto}
+                </p>
+              )
+            })()}
           </div>
 
           <div className="cajetin-parte-inferior">

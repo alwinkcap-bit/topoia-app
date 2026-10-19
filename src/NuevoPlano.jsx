@@ -89,9 +89,13 @@ function NuevoPlano({ volver, continuar }) {
     areaFolioReal: '',
     numeroPredio: '',
     cedulaCatastral: '',
+    documentoRegistral: '',
+    descripcionCajetin: '',
     proposito: '',
     adquiriente: '',
     cedulaAdquiriente: '',
+    firmasAdicionales: [],
+    adquirientesAdicionales: [],
     profesional: '',
     idoneidad: '',
     fechaLevantamiento: '',
@@ -140,7 +144,93 @@ function NuevoPlano({ volver, continuar }) {
     })
   }
 
- const enviarFormulario = (e) => {
+
+  const generarLeyenda = () => {
+    const tipo = datos.tipoPlano
+    const propietario = datos.propietario?.trim()
+    const adquiriente = datos.adquiriente?.trim()
+
+    const encabezados = {
+      general: 'LOTE DE TERRENO',
+      segregacion: 'LOTE DE TERRENO QUE SERÁ SEGREGADO',
+      'medidas-linderos': 'LOTE DE TERRENO OBJETO DE MEDIDAS Y LINDEROS',
+      'ley-37': 'LOTE DE TERRENO OBJETO DEL TRÁMITE LEY 37',
+      lotificacion: 'TERRENO OBJETO DE LOTIFICACIÓN',
+    }
+
+    const partes = [encabezados[tipo] || 'LOTE DE TERRENO']
+
+    if (datos.folioReal) {
+      partes.push(`DEL FOLIO REAL N.º ${datos.folioReal}`)
+    }
+
+    if (datos.documentoRegistral) {
+      partes.push(`DOCUMENTO N.º ${datos.documentoRegistral}`)
+    }
+
+    if (datos.codigoUbicacion) {
+      partes.push(`CÓDIGO DE UBICACIÓN N.º ${datos.codigoUbicacion}`)
+    }
+
+    if (propietario) {
+      partes.push(`PROPIEDAD DE: ${propietario.toUpperCase()}`)
+    }
+
+    if (datos.cedulaPropietario) {
+      partes.push(`CÉDULA N.º ${datos.cedulaPropietario}`)
+    }
+
+    let texto = partes.join(', ') + '.'
+
+    if (adquiriente) {
+      texto += `\\nSERÁ ADQUIRIDO POR:\\n${adquiriente.toUpperCase()}`
+
+      if (datos.cedulaAdquiriente) {
+        texto += ` — CÉDULA N.º ${datos.cedulaAdquiriente}`
+      }
+    }
+
+    setDatos(anterior => ({
+      ...anterior,
+      descripcionCajetin: texto,
+    }))
+  }
+
+
+  const agregarAdquiriente = () => {
+    setDatos(anterior => ({
+      ...anterior,
+      adquirientesAdicionales: [
+        ...(anterior.adquirientesAdicionales || []),
+        { nombre: '', cedula: '' }
+      ]
+    }))
+  }
+
+  const actualizarAdquiriente = (indice, campo, valor) => {
+    setDatos(anterior => ({
+      ...anterior,
+      adquirientesAdicionales:
+        (anterior.adquirientesAdicionales || []).map(
+          (persona, i) =>
+            i === indice
+              ? { ...persona, [campo]: valor }
+              : persona
+        )
+    }))
+  }
+
+  const eliminarAdquiriente = (indice) => {
+    setDatos(anterior => ({
+      ...anterior,
+      adquirientesAdicionales:
+        (anterior.adquirientesAdicionales || []).filter(
+          (_, i) => i !== indice
+        )
+    }))
+  }
+
+  const enviarFormulario = (e) => {
   e.preventDefault()
 
   if (continuar) {
@@ -178,6 +268,49 @@ function NuevoPlano({ volver, continuar }) {
       </div>
 
       <form className="form-plano" onSubmit={enviarFormulario}>
+
+        <section className="form-seccion">
+          <div className="form-seccion-titulo">
+            <span>LG</span>
+            <div>
+              <h3>Leyenda técnica del plano</h3>
+              <p>Genera y corrige la descripción del cajetín.</p>
+            </div>
+          </div>
+
+          <div className="form-grid">
+            <label className="campo">
+              Número de documento registral
+              <input
+                name="documentoRegistral"
+                value={datos.documentoRegistral || ''}
+                onChange={actualizar}
+                placeholder="Ej. 890421"
+              />
+            </label>
+
+            <div className="campo campo-completo">
+              <button type="button" onClick={generarLeyenda}>
+                Generar leyenda automáticamente
+              </button>
+            </div>
+
+            <label className="campo campo-completo">
+              Leyenda editable
+              <textarea
+                name="descripcionCajetin"
+                value={datos.descripcionCajetin || ''}
+                onChange={actualizar}
+                rows={7}
+                placeholder="Genera la leyenda y corrige su redacción aquí."
+              />
+            </label>
+          </div>
+        </section>
+
+
+
+
 
         <section className="form-seccion">
           <div className="form-seccion-titulo">
@@ -376,26 +509,6 @@ function NuevoPlano({ volver, continuar }) {
                 placeholder="Identificación"
               />
             </label>
-
-            <label className="campo">
-              N.º de predio
-              <input
-                name="numeroPredio"
-                value={datos.numeroPredio}
-                onChange={actualizar}
-                placeholder="Número de predio"
-              />
-            </label>
-
-            <label className="campo campo-completo">
-              N.º de cédula catastral
-              <input
-                name="cedulaCatastral"
-                value={datos.cedulaCatastral}
-                onChange={actualizar}
-                placeholder="Cédula catastral"
-              />
-            </label>
           </div>
         </section>
 
@@ -428,6 +541,63 @@ function NuevoPlano({ volver, continuar }) {
                 placeholder="Identificación"
               />
             </label>
+          </div>
+
+          <div style={{ marginTop: '18px' }}>
+            {(datos.adquirientesAdicionales || []).map(
+              (persona, indice) => (
+                <div
+                  key={indice}
+                  className="form-grid"
+                  style={{
+                    marginBottom: '16px',
+                    padding: '14px',
+                    border: '1px solid #d5e0e3',
+                    borderRadius: '10px'
+                  }}
+                >
+                  <label className="campo">
+                    Nombre del adquiriente {indice + 2}
+                    <input
+                      value={persona.nombre || ''}
+                      onChange={e =>
+                        actualizarAdquiriente(
+                          indice, 'nombre', e.target.value
+                        )
+                      }
+                      placeholder="Nombre completo"
+                    />
+                  </label>
+
+                  <label className="campo">
+                    Cédula / identificación
+                    <input
+                      value={persona.cedula || ''}
+                      onChange={e =>
+                        actualizarAdquiriente(
+                          indice, 'cedula', e.target.value
+                        )
+                      }
+                      placeholder="Identificación"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => eliminarAdquiriente(indice)}
+                  >
+                    Eliminar adquiriente
+                  </button>
+                </div>
+              )
+            )}
+
+            <button
+              type="button"
+              onClick={agregarAdquiriente}
+            >
+              + Agregar adquiriente
+            </button>
           </div>
         </section>
 
