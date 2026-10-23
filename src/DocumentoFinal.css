@@ -1,1 +1,58 @@
 .topoia-datos-ocultos > :not(.form-acciones) { display: none !important; }
+
+/* Localización Regional: cuadro técnico de 12 × 12 cm */
+@media print {
+  .localizacion-regional-12cm {
+    width: 120mm !important;
+    height: 120mm !important;
+    max-width: 120mm !important;
+    max-height: 120mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+}
+
+/* Controles de zoom de la vista previa */
+.topoia-controles-zoom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.topoia-controles-zoom button {
+  padding: 7px 13px;
+  border: 1px solid #999;
+  border-radius: 5px;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+}
+
+.topoia-controles-zoom strong {
+  min-width: 50px;
+  text-align: center;
+}
+
+.topoia-zoom-visor {
+  width: 100%;
+  overflow: auto;
+}
+
+.topoia-zoom-hoja {
+  width: max-content;
+}
+
+@media print {
+  .topoia-controles-zoom {
+    display: none !important;
+  }
+
+  .topoia-zoom-visor {
+    overflow: visible !important;
+  }
+
+  .topoia-zoom-hoja {
+    zoom: 100% !important;
+  }
+}

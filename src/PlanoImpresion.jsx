@@ -1,6 +1,6 @@
 import './PlanoImpresion.css'
 import { useState } from 'react'
-import LocalizacionRegional from './LocalizacionRegional'
+import LocalizacionRegionalManual from './LocalizacionRegionalManual'
 import DetalleAmarre from './DetalleAmarre'
 
 export default function PlanoImpresion({
@@ -406,12 +406,7 @@ export default function PlanoImpresion({
       </footer>
 
       <div className="topoia-lateral">
-        <LocalizacionRegional
-          ubicacionGeografica={ubicacionGeografica}
-          datosProyecto={datosProyecto}
-          coordenadasFinales={coordenadasFinales}
-          sistemaCoordenadas={sistema}
-        />
+        <LocalizacionRegionalManual />
 
         <DetalleAmarre
           coordenadasFinales={coordenadasFinales}

@@ -14,6 +14,27 @@ function LocalizacionRegional({
 }) {
   const [cartografiaHerrera, setCartografiaHerrera] = useState(null)
 
+  const [cartografiaOSM, setCartografiaOSM] = useState(null)
+
+  useEffect(() => {
+    if (sistemaCoordenadas !== 'utm') {
+      setCartografiaOSM(null)
+      return
+    }
+
+    fetch(`${import.meta.env.BASE_URL}cartografia/los_cantos.geojson`)
+      .then((respuesta) => {
+        if (!respuesta.ok) throw new Error('GeoJSON no disponible')
+        return respuesta.json()
+      })
+      .then(setCartografiaOSM)
+      .catch((error) => {
+        console.error('Error cartografía OSM:', error)
+        setCartografiaOSM(null)
+      })
+  }, [sistemaCoordenadas])
+
+
   useEffect(() => {
     if (sistemaCoordenadas !== 'utm') {
       setCartografiaHerrera(null)
@@ -53,7 +74,7 @@ function LocalizacionRegional({
       norte: centroNorte,
     })
 
-    fetch('/cartografia/indice_sectores.json')
+    fetch(`${import.meta.env.BASE_URL}cartografia/indice_sectores.json`)
       .then((respuesta) => {
         if (!respuesta.ok) {
           throw new Error('No se pudo cargar el indice de sectores.')
@@ -170,7 +191,7 @@ function LocalizacionRegional({
 
   if (!ubicacionGeografica) {
     return (
-      <div className="localizacion-regional">
+      <div className="localizacion-regional localizacion-regional-12cm">
         <p>
           No hay coordenadas geográficas disponibles para generar
           la Localización Regional.
@@ -226,8 +247,8 @@ function LocalizacionRegional({
 
 
   const radioRegional = Math.max(
-    750,
-    dimensionPredio * 10
+    500,
+    dimensionPredio * 4
   )
 
   const bbox = crearBBoxRegional(
@@ -316,7 +337,7 @@ function LocalizacionRegional({
 
     const lado = Math.min(
       800,
-      Math.max(120, Math.max(ancho, alto) * 3)
+      Math.max(80, Math.max(ancho, alto) * 2)
     )
 
     return {
@@ -357,8 +378,151 @@ function LocalizacionRegional({
         .filter((texto) => texto.posicion)
     : []
 
+  // Cuadrícula UTM real: intervalo de 250 metros
+  const lineasUTM = []
+
+  if (bbox && sistemaCoordenadas === 'utm') {
+    const intervalo = 250
+
+    const esteMin = Math.min(...estes) - radioRegional
+    const esteMax = Math.max(...estes) + radioRegional
+    const norteMin = Math.min(...nortes) - radioRegional
+    const norteMax = Math.max(...nortes) + radioRegional
+
+    const proyectarUTM = (este, norte) => {
+      const geo = utm17NAGeograficas(este, norte)
+      if (!geo) return null
+
+      const mercator = geograficaAWebMercator(
+        geo.latitud,
+        geo.longitud
+      )
+      if (!mercator) return null
+
+      return {
+        x: ((mercator.x - bbox.xmin) / (bbox.xmax - bbox.xmin)) * 900,
+        y: (1 - (mercator.y - bbox.ymin) / (bbox.ymax - bbox.ymin)) * 700,
+      }
+    }
+
+    for (
+      let este = Math.floor(esteMin / intervalo) * intervalo;
+      este <= esteMax;
+      este += intervalo
+    ) {
+      const a = proyectarUTM(este, norteMin)
+      const b = proyectarUTM(este, norteMax)
+
+      if (a && b) {
+        lineasUTM.push({
+          clave: `E-${este}`,
+          este,
+          x1: a.x,
+          y1: a.y,
+          x2: b.x,
+          y2: b.y,
+        })
+      }
+    }
+
+    for (
+      let norte = Math.floor(norteMin / intervalo) * intervalo;
+      norte <= norteMax;
+      norte += intervalo
+    ) {
+      const a = proyectarUTM(esteMin, norte)
+      const b = proyectarUTM(esteMax, norte)
+
+      if (a && b) {
+        lineasUTM.push({
+          clave: `N-${norte}`,
+          norte,
+          x1: a.x,
+          y1: a.y,
+          x2: b.x,
+          y2: b.y,
+        })
+      }
+    }
+  }
+
+
+  const elementosOSM = cartografiaOSM && bbox
+    ? cartografiaOSM.features.map((elemento, indice) => {
+        const geometria = elemento.geometry
+        if (!geometria) return null
+
+        const proyectar = ([longitud, latitud]) => {
+          const punto = geograficaAWebMercator(latitud, longitud)
+          if (!punto) return null
+
+          return {
+            x: ((punto.x - bbox.xmin) / (bbox.xmax - bbox.xmin)) * 900,
+            y: (1 - (punto.y - bbox.ymin) / (bbox.ymax - bbox.ymin)) * 700
+          }
+        }
+
+        const tipo = geometria.type
+        const coordenadas = geometria.coordinates
+
+        if (tipo === 'Point') {
+          return {
+            indice,
+            categoria: elemento.properties?.categoria,
+            nombre: elemento.properties?.nombre,
+            punto: proyectar(coordenadas)
+          }
+        }
+
+        if (tipo === 'LineString' || tipo === 'MultiLineString') {
+          const lineas = tipo === 'LineString'
+            ? [coordenadas]
+            : coordenadas
+
+          const trazados = lineas.map((linea) =>
+            linea.map(proyectar)
+              .filter(Boolean)
+              .map((punto) => `${punto.x},${punto.y}`)
+              .join(' ')
+          )
+
+          return {
+            indice,
+            categoria: elemento.properties?.categoria,
+            nombre: elemento.properties?.nombre,
+            tipoVia: elemento.properties?.tipo,
+            trazados
+          }
+        }
+
+        if (tipo === 'Polygon' || tipo === 'MultiPolygon') {
+          const poligonos = tipo === 'Polygon'
+            ? [coordenadas]
+            : coordenadas
+
+          const superficies = poligonos.flatMap((poligono) =>
+            poligono.map((anillo) =>
+              anillo.map(proyectar)
+                .filter(Boolean)
+                .map((punto) => `${punto.x},${punto.y}`)
+                .join(' ')
+            )
+          )
+
+          return {
+            indice,
+            categoria: elemento.properties?.categoria,
+            nombre: elemento.properties?.nombre,
+            superficies
+          }
+        }
+
+        return null
+      }).filter(Boolean)
+    : []
+
   const urlMapa = bbox
-    ? `https://sigigntg.anati.gob.pa/arcgisserver/rest/services/Mapa_Web_de_Poblados_2025_MIL1/MapServer/export?bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}&bboxSR=3857&imageSR=3857&size=900,700&dpi=96&format=png32&transparent=false&f=image`
+    ? `https://sigigntg.anati.gob.pa/arcgisserver/rest/services/Mapa_Web_de_Poblados_2025_MIL1/MapServer/export?bbox=${bbox.xmin},${bbox.ymin},${bbox.xmax},${bbox.ymax}&bboxSR=3857&imageSR=3857&size=1800,1400&dpi=192&format=png32&transparent=false&f=image`
     : null
 
   return (
@@ -398,6 +562,82 @@ function LocalizacionRegional({
         </strong>
       </div>
 
+
+
+
+      {!cartografiaHerrera && sistemaCoordenadas === 'utm' && (
+        <div style={{
+          width: '120mm',
+          height: '120mm',
+          boxSizing: 'border-box',
+          padding: '4mm',
+          background: '#fff',
+          border: '1px solid #111',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 700,
+            textAlign: 'center',
+            marginBottom: 5
+          }}>
+            LOCALIZACIÓN REGIONAL — VÍAS DE ACCESO
+          </div>
+
+          <svg
+            viewBox="0 0 900 900"
+            preserveAspectRatio="xMidYMid meet"
+            style={{
+              width: '100%',
+              flex: 1,
+              minHeight: 0,
+              background: '#fff',
+              border: '1px solid #333'
+            }}
+          >
+            <g>
+              {elementosOSM
+                .filter(elemento =>
+                  ['camino', 'carretera', 'via', 'calle'].includes(
+                    (elemento.categoria || '').toLowerCase()
+                  )
+                )
+                .flatMap(elemento =>
+                  (elemento.trazados || []).map((trazado, indice) => (
+                    <polyline
+                      key={`via-${elemento.indice}-${indice}`}
+                      points={trazado}
+                      fill="none"
+                      stroke="#111"
+                      strokeWidth={
+                        elemento.tipoVia === 'primary' ? 2.8 : 1.6
+                      }
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  ))
+                )}
+            </g>
+
+            <polygon
+              points={puntosPoligono || ''}
+              fill="none"
+              stroke="#000"
+              strokeWidth="4"
+            />
+          </svg>
+
+          <div style={{
+            textAlign: 'center',
+            fontSize: 9,
+            marginTop: 5
+          }}>
+            Cartografía vial — Localización Regional
+          </div>
+        </div>
+      )}
+
       {cartografiaHerrera && (
         <div
           style={{
@@ -420,7 +660,7 @@ function LocalizacionRegional({
           </div>
 
           <svg
-            viewBox={`${vistaPredio.x + vistaPredio.lado / 2 - (500 * 800 / (cartografiaHerrera.radio * 2))} ${vistaPredio.y + vistaPredio.lado / 2 - (500 * 800 / (cartografiaHerrera.radio * 2))} ${(1000 * 800 / (cartografiaHerrera.radio * 2))} ${(1000 * 800 / (cartografiaHerrera.radio * 2))}`}
+            viewBox={`${vistaPredio.x} ${vistaPredio.y} ${vistaPredio.lado} ${vistaPredio.lado}`}
             style={{
               display: 'block',
               width: '100%',

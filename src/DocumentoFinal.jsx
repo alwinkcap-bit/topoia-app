@@ -5,7 +5,7 @@ import {
   calcularCentroPuntos,
   utm17NAGeograficas,
 } from './geografia'
-import LocalizacionRegional from './LocalizacionRegional'
+import LocalizacionRegionalManual from './LocalizacionRegionalManual'
 import DetalleAmarre from './DetalleAmarre'
 
 function DocumentoFinal({
@@ -56,12 +56,16 @@ const restoLibre = areaFolioReal - areaSegregar
 
   const centroPredio = calcularCentroPuntos(coordenadasFinales)
 
-  const ubicacionGeografica = centroPredio
-    ? utm17NAGeograficas(
-        centroPredio.este,
-        centroPredio.norte
-      )
-    : null
+  const sistemaCoordenadas =
+    levantamiento?.sistemaCoordenadas || 'local'
+
+  const ubicacionGeografica =
+    sistemaCoordenadas === 'utm' && centroPredio
+      ? utm17NAGeograficas(
+          centroPredio.este,
+          centroPredio.norte
+        )
+      : null
 
   const crearPoligono = () => {
     if (coordenadasFinales.length < 3) return []
@@ -549,6 +553,8 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
 
     URL.revokeObjectURL(url)
   }
+  const [zoomVistaPlano, setZoomVistaPlano] = useState(100)
+
   return (
     <div className="nuevo-plano">
       <div className="nuevo-header">
@@ -576,14 +582,33 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
 
       <div className="no-imprimir">
         <h3>Vista previa del plano topográfico</h3>
+
+        <div className="topoia-controles-zoom">
+          <button type="button" onClick={() => setZoomVistaPlano(z => Math.max(50, z - 25))}>
+            −
+          </button>
+          <strong>{zoomVistaPlano}%</strong>
+          <button type="button" onClick={() => setZoomVistaPlano(z => Math.min(300, z + 25))}>
+            +
+          </button>
+          <button type="button" onClick={() => setZoomVistaPlano(100)}>
+            Restablecer
+          </button>
+        </div>
       </div>
-      <div className={`topoia-formato-${tamanoImpresion}`}>
-      <PlanoImpresion
-        datosProyecto={datosProyecto}
-        levantamiento={levantamiento}
-        coordenadasFinales={coordenadasFinales}
-        ubicacionGeografica={ubicacionGeografica}
-      />
+
+      <div className="topoia-zoom-visor">
+        <div
+          className={`topoia-formato-${tamanoImpresion} topoia-zoom-hoja`}
+          style={{ zoom: `${zoomVistaPlano}%` }}
+        >
+          <PlanoImpresion
+            datosProyecto={datosProyecto}
+            levantamiento={levantamiento}
+            coordenadasFinales={coordenadasFinales}
+            ubicacionGeografica={ubicacionGeografica}
+          />
+        </div>
       </div>
 
       <main className="form-plano topoia-datos-ocultos">
@@ -980,12 +1005,7 @@ const estes = coordenadasFinales.map((p) => Number(p.este))
 
   <DetalleAmarre coordenadasFinales={coordenadasFinales} detalleAmarre={levantamiento?.detalleAmarre} tramoAmarre={levantamiento?.tramoAmarre} sistemaCoordenadas={levantamiento?.sistemaCoordenadas || "local"} />
 
-  <LocalizacionRegional
-    ubicacionGeografica={ubicacionGeografica}
-    datosProyecto={datosProyecto}
-    coordenadasFinales={coordenadasFinales}
-    sistemaCoordenadas={levantamiento?.sistemaCoordenadas || 'local'}
-  />
+  <LocalizacionRegionalManual />
 </section>
 
 <section className="form-seccion">
